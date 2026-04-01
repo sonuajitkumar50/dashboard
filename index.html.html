@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TRW SUN STEERING WHEELS PVT LTD - Inventory Command Center</title>
+<style>
+:root {
+  --bg: #0d1117; --bg2: #161b22; --bg3: #21262d; --border: #30363d;
+  --text: #e6edf3; --text2: #8b949e; --text3: #c9d1d9;
+  --red: #f85149; --green: #3fb950; --yellow: #d29922; --purple: #a371f7;
+  --blue: #58a6ff; --orange: #f0883e; --teal: #39d353;
+  --critical: #f85149; --ok: #3fb950; --reorder: #d29922; --excess: #a371f7;
+  --card-bg: #161b22; --card-border: #30363d;
+  --font: 'Segoe UI', system-ui, sans-serif;
+  --slide-duration: 12000ms;
+}
+.light {
+  --bg: #f0f2f5; --bg2: #fff; --bg3: #e8eaf0; --border: #d0d7de;
+  --text: #1f2328; --text2: #656d76; --text3: #424a53;
+  --card-bg: #fff; --card-border: #d0d7de;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:var(--font); overflow-x:hidden; }
+
+/* ─── HEADER ─── */
+#header {
+  background: linear-gradient(135deg, #1a1f2e 0%, #161b22 50%, #0d1117 100%);
+  border-bottom: 2px solid #238636;
+  padding: 10px 20px;
+  display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top:0; z-index:1000;
+  box-shadow: 0 4px 20px rgba(35,134,54,.3);
+}
+.light #header { background: linear-gradient(135deg,#e8f5e9,#fff); border-bottom:2px solid #2da44e; }
+.company-brand { display:flex; align-items:center; gap:14px; }
+.logo-icon {
+  width:50px; height:50px; border-radius:12px;
+  background: linear-gradient(135deg,#238636,#3fb950);
+  display:flex; align-items:center; justify-content:center;
+  font-size:22px; font-weight:900; color:#fff;
+  box-shadow:0 0 20px rgba(63,185,80,.4);
+}
+.company-name { line-height:1.2; }
+.company-name h1 { font-size:17px; font-weight:800; color:#3fb950; letter-spacing:.5px; }
+.company-name .sub { font-size:10px; color:var(--text2); text-transform:uppercase; letter-spacing:1px; }
+.header-right { display:flex; align-items:center; gap:16px; }
+#datetime { font-size:13px; color:var(--blue); font-family:monospace; text-align:right; line-height:1.5; }
+.author-tag { font-size:14px; font-weight:700; color:#f0883e; text-align:right; letter-spacing:.5px; text-shadow: 0 0 8px rgba(240,136,62,.4); }
+.theme-btn {
+  background:var(--bg3); border:1px solid var(--border);
+  color:var(--text); padding:6px 14px; border-radius:8px;
+  cursor:pointer; font-size:12px; transition:.2s;
+}
+.theme-btn:hover { background:var(--blue); color:#fff; }
+
+/* ─── NAV TABS ─── */
+#nav {
+  background:var(--bg2); border-bottom:1px solid var(--border);
+  display:flex; gap:2px; padding:6px 16px; overflow-x:auto;
+  position:sticky; top:72px; z-index:999;
+}
+.tab-btn {
+  padding:7px 18px; border-radius:8px; border:none;
+  background:transparent; color:var(--text2); cursor:pointer;
+  font-size:12px; font-weight:600; white-space:nowrap;
+  transition:.2s; letter-spacing:.3px;
+}
+.tab-btn:hover, .tab-btn.active {
+  background:var(--blue); color:#fff;
+}
+
+/* ─── SLIDE CONTAINER ─── */
+.slide { display:none; padding:16px 20px; min-height:calc(100vh - 140px); }
+.slide.active { display:block; }
+
+/* ─── KPI TILES ─── */
+.kpi-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px; margin-bottom:20px; }
+.kpi-card {
+  background:var(--card-bg); border:1px solid var(--card-border);
+  border-radius:14px; padding:18px 16px;
+  position:relative; overflow:hidden; transition:.25s;
+}
+.kpi-card::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+}
+.kpi-card.critical::before { background:var(--critical); }
+.kpi-card.ok::before { background:var(--ok); }
+.kpi-card.reorder::before { background:var(--reorder); }
+.kpi-card.excess::before { background:var(--excess); }
+.kpi-card.total::before { background:var(--blue); }
+.kpi-card:hover { transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.3); }
+.kpi-icon { font-size:26px; margin-bottom:8px; }
+.kpi-label { font-size:11px; color:var(--text2); text-transform:uppercase; letter-spacing:.8px; margin-bottom:4px; }
+.kpi-value { font-size:34px; font-weight:800; line-height:1; }
+.kpi-card.critical .kpi-value { color:var(--critical); }
+.kpi-card.ok .kpi-value { color:var(--ok); }
+.kpi-card.reorder .kpi-value { color:var(--reorder); }
+.kpi-card.excess .kpi-value { color:var(--excess); }
+.kpi-card.total .kpi-value { color:var(--blue); }
+.kpi-pct { font-size:11px; color:var(--text2); margin-top:4px; }
+.sparkline { width:100%; height:32px; margin-top:10px; }
+
+/* ─── HEAT MAP ─── */
+.heatmap-container {
+  background: linear-gradient(135deg,#0d1117 0%,#161b22 100%);
+  border:1px solid #30363d; border-radius:16px; padding:22px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.05);
+}
+.light .heatmap-container { background: linear-gradient(135deg,#f0f4f8,#fff); }
+.heatmap-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:18px; flex-wrap:wrap; gap:10px; }
+.heatmap-header h3 { font-size:16px; font-weight:800; letter-spacing:.3px; }
+.legend { display:flex; gap:16px; flex-wrap:wrap; }
+.legend-item { display:flex; align-items:center; gap:7px; font-size:12px; font-weight:600; }
+.legend-dot { width:12px; height:12px; border-radius:3px; }
+.heatmap-grid {
+  display:grid; grid-template-columns:repeat(auto-fill,minmax(148px,1fr));
+  gap:10px; max-height:510px; overflow-y:auto; padding-right:4px;
+}
+.hm-cell {
+  border-radius:12px; padding:13px 11px; cursor:pointer;
+  transition:all .2s ease; border:1px solid transparent;
+  position:relative; overflow:hidden;
+}
+.hm-cell::before {
+  content:''; position:absolute; top:0; left:0; right:0; height:3px;
+  border-radius:12px 12px 0 0;
+}
+.hm-cell:hover { transform:translateY(-3px) scale(1.02); z-index:2; box-shadow:0 8px 24px rgba(0,0,0,.5); }
+.hm-cell.Critical {
+  background: linear-gradient(135deg, rgba(248,81,73,.22) 0%, rgba(180,30,30,.14) 100%);
+  border-color: rgba(248,81,73,.55);
+  box-shadow: 0 2px 8px rgba(248,81,73,.15), inset 0 0 20px rgba(248,81,73,.05);
+}
+.hm-cell.Critical::before { background: linear-gradient(90deg,#f85149,#ff6b6b); }
+.hm-cell.OK {
+  background: linear-gradient(135deg, rgba(63,185,80,.2) 0%, rgba(30,120,40,.12) 100%);
+  border-color: rgba(63,185,80,.45);
+  box-shadow: 0 2px 8px rgba(63,185,80,.12), inset 0 0 20px rgba(63,185,80,.04);
+}
+.hm-cell.OK::before { background: linear-gradient(90deg,#3fb950,#57d68a); }
+.hm-cell.Reorder {
+  background: linear-gradient(135deg, rgba(210,153,34,.22) 0%, rgba(160,110,20,.14) 100%);
+  border-color: rgba(210,153,34,.55);
+  box-shadow: 0 2px 8px rgba(210,153,34,.15), inset 0 0 20px rgba(210,153,34,.05);
+}
+.hm-cell.Reorder::before { background: linear-gradient(90deg,#d29922,#f0c040); }
+.hm-cell.Excess {
+  background: linear-gradient(135deg, rgba(163,113,247,.2) 0%, rgba(100,60,200,.12) 100%);
+  border-color: rgba(163,113,247,.45);
+  box-shadow: 0 2px 8px rgba(163,113,247,.12), inset 0 0 20px rgba(163,113,247,.04);
+}
+.hm-cell.Excess::before { background: linear-gradient(90deg,#a371f7,#c49dff); }
+.hm-pno { font-size:10px; font-weight:800; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; letter-spacing:.3px; }
+.hm-name { font-size:9.5px; color:var(--text2); margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.3; }
+.hm-qty { font-size:15px; font-weight:900; margin-top:6px; }
+.hm-cell.Critical .hm-qty { color:#ff6b6b; text-shadow:0 0 10px rgba(248,81,73,.5); }
+.hm-cell.OK .hm-qty { color:#57d68a; text-shadow:0 0 10px rgba(63,185,80,.4); }
+.hm-cell.Reorder .hm-qty { color:#f0c040; text-shadow:0 0 10px rgba(210,153,34,.5); }
+.hm-cell.Excess .hm-qty { color:#c49dff; text-shadow:0 0 10px rgba(163,113,247,.4); }
+.hm-status-tag {
+  display:inline-block; font-size:9px; font-weight:800; text-transform:uppercase;
+  letter-spacing:.8px; margin-top:5px; padding:2px 7px; border-radius:10px;
+}
+.hm-cell.Critical .hm-status-tag { color:#ff6b6b; background:rgba(248,81,73,.15); border:1px solid rgba(248,81,73,.3); }
+.hm-cell.OK .hm-status-tag { color:#57d68a; background:rgba(63,185,80,.12); border:1px solid rgba(63,185,80,.25); }
+.hm-cell.Reorder .hm-status-tag { color:#f0c040; background:rgba(210,153,34,.15); border:1px solid rgba(210,153,34,.3); }
+.hm-cell.Excess .hm-status-tag { color:#c49dff; background:rgba(163,113,247,.12); border:1px solid rgba(163,113,247,.25); }
+
+/* ─── SEARCH/FILTER ─── */
+.filter-bar { display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap; }
+.filter-bar input, .filter-bar select {
+  background:var(--bg3); border:1px solid var(--border);
+  color:var(--text); padding:8px 12px; border-radius:8px;
+  font-size:12px; outline:none;
+}
+.filter-bar input { flex:1; min-width:180px; }
+.filter-bar input:focus, .filter-bar select:focus { border-color:var(--blue); }
+
+/* ─── SUNBURST ─── */
+#sunburst-container { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:20px; text-align:center; }
+#sunburstSvg { max-width:500px; width:100%; }
+.sunburst-info { margin-top:12px; font-size:13px; color:var(--text2); }
+
+/* ─── SUPPLIER RISK MATRIX ─── */
+#risk-container { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:20px; }
+#riskCanvas { width:100%; max-width:700px; display:block; margin:0 auto; }
+
+/* ─── REORDER QUEUE ─── */
+.reorder-table-wrap { overflow-x:auto; }
+table { width:100%; border-collapse:collapse; font-size:12px; }
+thead th {
+  background:var(--bg3); padding:10px 12px; text-align:left;
+  font-size:11px; font-weight:700; color:var(--text2);
+  text-transform:uppercase; letter-spacing:.5px; position:sticky; top:0;
+}
+tbody tr { border-bottom:1px solid var(--border); transition:.15s; }
+tbody tr:hover { background:var(--bg3); }
+tbody td { padding:8px 12px; vertical-align:middle; }
+.status-badge {
+  display:inline-block; padding:2px 8px; border-radius:20px;
+  font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.5px;
+}
+.badge-Critical { background:rgba(248,81,73,.2); color:var(--critical); border:1px solid var(--critical); }
+.badge-OK { background:rgba(63,185,80,.15); color:var(--ok); border:1px solid var(--ok); }
+.badge-Reorder { background:rgba(210,153,34,.2); color:var(--reorder); border:1px solid var(--reorder); }
+.badge-Excess { background:rgba(163,113,247,.15); color:var(--excess); border:1px solid var(--excess); }
+.po-btn {
+  background: linear-gradient(135deg,#238636,#3fb950);
+  border:none; color:#fff; padding:4px 12px; border-radius:6px;
+  cursor:pointer; font-size:11px; font-weight:600; transition:.2s;
+}
+.po-btn:hover { transform:scale(1.05); box-shadow:0 4px 12px rgba(63,185,80,.4); }
+
+/* ─── DEAD STOCK ─── */
+.deadstock-card { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:20px; }
+.ds-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:12px; margin-top:12px; max-height:450px; overflow-y:auto; }
+.ds-item { background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:14px; border-left:3px solid var(--purple); }
+.ds-pno { font-size:11px; font-weight:700; color:var(--purple); }
+.ds-desc { font-size:11px; color:var(--text2); margin-top:2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.ds-supplier { font-size:10px; color:var(--text2); margin-top:4px; }
+.ds-qty { font-size:16px; font-weight:800; color:var(--excess); margin-top:6px; }
+.ds-value { font-size:11px; color:var(--yellow); margin-top:2px; }
+
+/* ─── COMPONENT TREE ─── */
+.tree-container { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:20px; }
+.tree-node { cursor:pointer; user-select:none; }
+.tree-children { padding-left:24px; border-left:1px dashed var(--border); margin-left:8px; }
+.tree-row { display:flex; align-items:center; gap:8px; padding:6px 8px; border-radius:6px; transition:.15s; margin-bottom:2px; }
+.tree-row:hover { background:var(--bg3); }
+.tree-toggle { width:14px; font-size:11px; color:var(--text2); }
+.tree-icon { font-size:14px; }
+.tree-label { font-size:12px; flex:1; }
+.tree-badge { font-size:10px; padding:1px 6px; border-radius:10px; font-weight:700; }
+.flag-insufficient { color:var(--critical) !important; }
+
+/* ─── TV SCROLL SLIDE (LAST) ─── */
+#slide-tv { background:var(--bg); }
+.tv-header {
+  background:linear-gradient(135deg,#0d3320,#0d1117);
+  border-bottom:2px solid #3fb950;
+  padding:12px 24px; text-align:center;
+  position:sticky; top:0; z-index:10;
+}
+.tv-header h2 { font-size:18px; font-weight:800; color:#3fb950; }
+.tv-header .tv-sub { font-size:11px; color:var(--text2); margin-top:3px; }
+.tv-table-wrap { overflow:hidden; }
+.tv-table { width:100%; border-collapse:collapse; font-size:12.5px; }
+.tv-table thead th {
+  background:#0d3320; color:#3fb950;
+  padding:10px 14px; text-align:left; font-size:11px;
+  font-weight:800; text-transform:uppercase; letter-spacing:.5px;
+  position:sticky; top:0; z-index:5;
+  border-bottom:2px solid #3fb950;
+}
+.tv-table tbody tr { border-bottom:1px solid var(--border); }
+.tv-table tbody tr:nth-child(even) { background:var(--bg2); }
+.tv-table tbody td { padding:8px 14px; vertical-align:middle; }
+.tv-scroll-wrap { height:calc(100vh - 200px); overflow:hidden; position:relative; }
+.tv-scroll-inner { animation: tvscroll 120s linear infinite; }
+@keyframes tvscroll {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+.tv-scroll-inner:hover { animation-play-state:paused; }
+
+/* ─── GEO MAP ─── */
+#geo-container { background:var(--card-bg); border:1px solid var(--border); border-radius:14px; padding:20px; }
+.india-map-wrap { position:relative; text-align:center; }
+.geo-supplier-list { margin-top:14px; display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:8px; max-height:280px; overflow-y:auto; }
+.geo-item { background:var(--bg3); border:1px solid var(--border); border-radius:8px; padding:10px; }
+.geo-item .geo-name { font-size:11px; font-weight:700; color:var(--blue); }
+.geo-item .geo-count { font-size:10px; color:var(--text2); }
+
+/* ─── SECTION TITLE ─── */
+.section-title { font-size:16px; font-weight:800; color:var(--text); margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+.section-title span { font-size:18px; }
+
+/* ─── TOOLTIP ─── */
+#tooltip {
+  position:fixed; background:var(--bg2); border:1px solid var(--border);
+  border-radius:10px; padding:12px 16px; font-size:12px; pointer-events:none;
+  z-index:9999; max-width:260px; box-shadow:0 8px 24px rgba(0,0,0,.4);
+  display:none;
+}
+
+/* ─── MODAL ─── */
+.modal-overlay {
+  display:none; position:fixed; inset:0;
+  background:rgba(0,0,0,.7); z-index:10000;
+  align-items:center; justify-content:center;
+}
+.modal-overlay.open { display:flex; }
+.modal-box {
+  background:var(--bg2); border:1px solid var(--border); border-radius:16px;
+  padding:24px; max-width:480px; width:90%; max-height:85vh; overflow-y:auto;
+}
+.modal-box h3 { font-size:16px; font-weight:800; margin-bottom:16px; color:var(--blue); }
+.modal-field { margin-bottom:12px; }
+.modal-field label { font-size:11px; color:var(--text2); text-transform:uppercase; }
+.modal-field p { font-size:13px; margin-top:4px; }
+.modal-close { float:right; background:var(--bg3); border:1px solid var(--border); color:var(--text); padding:4px 12px; border-radius:6px; cursor:pointer; }
+.po-confirm { background:linear-gradient(135deg,#238636,#3fb950); color:#fff; border:none; padding:8px 20px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; margin-top:8px; }
+
+/* ─── SCROLLBAR ─── */
+::-webkit-scrollbar { width:6px; height:6px; }
+::-webkit-scrollbar-track { background:var(--bg2); }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+
+/* ─── GRID LAYOUT ─── */
+.two-col { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+@media(max-width:768px) { .two-col { grid-template-columns:1fr; } }
+
+.progress-bar-wrap { background:var(--bg3); border-radius:4px; height:6px; margin-top:4px; overflow:hidden; }
+.progress-bar { height:100%; border-radius:4px; transition:.4s; }
+
+/* ─── CATEGORY FILTER PILLS ─── */
+.filter-pills { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px; }
+.pill { padding:4px 12px; border-radius:20px; font-size:11px; cursor:pointer; border:1px solid var(--border); background:var(--bg3); color:var(--text2); transition:.2s; }
+.pill.active { background:var(--blue); color:#fff; border-color:var(--blue); }
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div id="header">
+  <div class="company-brand">
+    <div class="logo-icon">TRW</div>
+    <div class="company-name">
+      <h1>TRW SUN STEERING WHEELS PVT LTD</h1>
+      <div class="sub">Inventory Command Center &bull; Daily Stock Monitoring</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <div>
+      <div id="datetime">Loading...</div>
+      <div class="author-tag">Created by: Ajeet Khan</div>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()">☀️ Light</button>
+  </div>
+</div>
+
+<!-- NAV TABS -->
+<div id="nav">
+  <button class="tab-btn active" onclick="showSlide('slide-kpi',this)">📊 KPI Dashboard</button>
+  <button class="tab-btn" onclick="showSlide('slide-heatmap',this)">🔥 Heat Map</button>
+  <button class="tab-btn" onclick="showSlide('slide-sunburst',this)">🌐 Category Chart</button>
+  <button class="tab-btn" onclick="showSlide('slide-geo',this)">📍 Supplier Map</button>
+  <button class="tab-btn" onclick="showSlide('slide-risk',this)">⚠️ Risk Matrix</button>
+  <button class="tab-btn" onclick="showSlide('slide-reorder',this)">📦 Reorder Queue</button>
+  <button class="tab-btn" onclick="showSlide('slide-deadstock',this)">🗄️ Dead Stock</button>
+  <button class="tab-btn" onclick="showSlide('slide-tree',this)">🌳 Component Tree</button>
+  <button class="tab-btn" onclick="showSlide('slide-tv',this)">📺 All Items (TV)</button>
+  <div style="flex:1"></div>
+  <!-- Auto-slide controls -->
+  <div style="display:flex;align-items:center;gap:8px;padding:0 8px;border-left:1px solid var(--border)">
+    <button id="autoBtn" class="theme-btn" onclick="toggleAutoSlide()" style="background:rgba(63,185,80,.2);color:#3fb950;border-color:#3fb950;">
+      ▶ Auto (20s)
+    </button>
+    <div id="autoProgress" style="width:60px;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;display:none">
+      <div id="autoBar" style="height:100%;background:#3fb950;border-radius:2px;width:0%;transition:width .1s linear"></div>
+    </div>
+  </div>
+  <!-- Upload button -->
+  <button class="theme-btn" onclick="document.getElementById('uploadFile').click()" style="background:rgba(88,166,255,.15);color:var(--blue);border-color:var(--blue);">
+    📤 Upload Data
+  </button>
+  <input type="file" id="uploadFile" accept=".xlsx,.csv,.json" style="display:none" onchange="handleUpload(this)">
+</div>
+<!-- Upload status bar -->
+<div id="uploadBar" style="display:none;background:rgba(63,185,80,.12);border-bottom:1px solid rgba(63,185,80,.3);padding:8px 20px;font-size:12px;color:#3fb950;display:flex;align-items:center;gap:10px">
+  <span id="uploadStatus">Processing file...</span>
+  <button onclick="document.getElementById('uploadBar').style.display='none'" style="margin-left:auto;background:none;border:none;color:var(--text2);cursor:pointer">✕</button>
+</div>
+
+<!-- ═══════════════ SLIDE 1: KPI DASHBOARD ═══════════════ -->
+<div id="slide-kpi" class="slide active">
+  <div class="kpi-grid">
+    <div class="kpi-card total">
+      <div class="kpi-icon">📦</div>
+      <div class="kpi-label">Total Items</div>
+      <div class="kpi-value">393</div>
+      <div class="kpi-pct">Active Inventory</div>
+      <svg class="sparkline" id="sp-total"></svg>
+    </div>
+    <div class="kpi-card critical">
+      <div class="kpi-icon">🚨</div>
+      <div class="kpi-label">Critical Stock</div>
+      <div class="kpi-value">222</div>
+      <div class="kpi-pct">56.5% of total</div>
+      <svg class="sparkline" id="sp-critical"></svg>
+    </div>
+    <div class="kpi-card ok">
+      <div class="kpi-icon">✅</div>
+      <div class="kpi-label">OK Stock</div>
+      <div class="kpi-value">61</div>
+      <div class="kpi-pct">15.5% of total</div>
+      <svg class="sparkline" id="sp-ok"></svg>
+    </div>
+    <div class="kpi-card reorder">
+      <div class="kpi-icon">🔔</div>
+      <div class="kpi-label">Reorder Needed</div>
+      <div class="kpi-value">20</div>
+      <div class="kpi-pct">5.1% of total</div>
+      <svg class="sparkline" id="sp-reorder"></svg>
+    </div>
+    <div class="kpi-card excess">
+      <div class="kpi-icon">📈</div>
+      <div class="kpi-label">Excess Stock</div>
+      <div class="kpi-value">90</div>
+      <div class="kpi-pct">22.9% of total</div>
+      <svg class="sparkline" id="sp-excess"></svg>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:20px;">
+      <div class="section-title"><span>📁</span> Stock by Category</div>
+      <div id="catBreakdown"></div>
+    </div>
+    <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:20px;">
+      <div class="section-title"><span>🏭</span> Top Suppliers by Items</div>
+      <div id="supplierBreakdown"></div>
+    </div>
+  </div>
+
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:16px;">
+    <div class="section-title"><span>🚨</span> Critical Items Requiring Immediate Action</div>
+    <div id="criticalTable"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ SLIDE 2: HEAT MAP ═══════════════ -->
+<div id="slide-heatmap" class="slide">
+  <div class="heatmap-container">
+    <div class="heatmap-header">
+      <h3>🔥 Inventory Heat Map — Stock Status by Item</h3>
+      <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--critical)"></div>Critical</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--ok)"></div>OK</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--reorder)"></div>Reorder</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--excess)"></div>Excess</div>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <input type="text" id="hmSearch" placeholder="🔍 Search part no or name..." oninput="renderHeatmap()">
+      <select id="hmCat" onchange="renderHeatmap()">
+        <option value="">All Categories</option>
+      </select>
+      <select id="hmStatus" onchange="renderHeatmap()">
+        <option value="">All Status</option>
+        <option>Critical</option><option>OK</option><option>Reorder</option><option>Excess</option>
+      </select>
+    </div>
+    <div class="heatmap-grid" id="heatmapGrid"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ SLIDE 3: SUNBURST ═══════════════ -->
+<div id="slide-sunburst" class="slide">
+  <div id="sunburst-container">
+    <div class="section-title" style="justify-content:center"><span>🌐</span> Stock Distribution by Category</div>
+    <svg id="sunburstSvg" viewBox="0 0 520 520"></svg>
+    <div class="sunburst-info" id="sunburstInfo">Hover over a segment to see details</div>
+    <div id="sunburstLegend" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:16px;"></div>
+  </div>
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:20px;margin-top:16px;">
+    <div class="section-title"><span>📊</span> Category Status Breakdown</div>
+    <div id="catStatusDetail"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ SLIDE 4: GEO MAP ═══════════════ -->
+<div id="slide-geo" class="slide">
+  <div id="geo-container">
+    <div class="section-title"><span>📍</span> Supplier Geographic Distribution</div>
+    <div class="india-map-wrap">
+      <svg viewBox="0 0 380 430" style="max-width:420px;width:100%;border:1px solid var(--border);border-radius:12px;background:var(--bg3);">
+        <!-- India outline simplified -->
+        <g fill="#1a2a1a" stroke="#3fb950" stroke-width="0.8">
+          <path d="M130,20 L160,15 L195,22 L225,40 L242,62 L248,90 L232,118 L218,132 L224,153 L244,172 L254,202 L249,232 L233,262 L213,288 L197,308 L182,324 L172,348 L162,363 L150,352 L140,332 L129,312 L113,296 L99,275 L88,254 L83,230 L88,204 L99,184 L93,163 L78,143 L68,118 L73,93 L84,68 L100,48 Z"/>
+          <ellipse cx="192" cy="400" rx="13" ry="17"/>
+        </g>
+        <!-- Location markers -->
+        <!-- Noida/Delhi - TRW SUN HQ -->
+        <circle cx="158" cy="92" r="9" fill="#3fb950" opacity=".9"/>
+        <circle cx="158" cy="92" r="16" fill="#3fb950" opacity=".2"/>
+        <circle cx="158" cy="92" r="23" fill="#3fb950" opacity=".07"/>
+        <text x="178" y="87" fill="#3fb950" font-size="9.5" font-weight="800">TRW SUN SW PVT LTD</text>
+        <text x="178" y="99" fill="#8b949e" font-size="8">Noida (HQ)</text>
+
+        <!-- Manesar/Gurgaon - TRW SUN -->
+        <circle cx="148" cy="108" r="7" fill="#57d68a" opacity=".9"/>
+        <circle cx="148" cy="108" r="13" fill="#57d68a" opacity=".2"/>
+        <text x="163" y="106" fill="#57d68a" font-size="9" font-weight="700">TRW SUN SW PVT LTD</text>
+        <text x="163" y="116" fill="#8b949e" font-size="8">Manesar, Gurgaon</text>
+
+        <!-- Pune - TRW SUN Plant -->
+        <circle cx="138" cy="238" r="7" fill="#58a6ff" opacity=".9"/>
+        <circle cx="138" cy="238" r="13" fill="#58a6ff" opacity=".2"/>
+        <text x="152" y="236" fill="#58a6ff" font-size="9" font-weight="700">TRW SUN SW PVT LTD</text>
+        <text x="152" y="246" fill="#8b949e" font-size="8">Pune Plant</text>
+
+        <!-- Chennai - ZF Rane -->
+        <circle cx="172" cy="308" r="8" fill="#f0883e" opacity=".9"/>
+        <circle cx="172" cy="308" r="15" fill="#f0883e" opacity=".2"/>
+        <circle cx="172" cy="308" r="22" fill="#f0883e" opacity=".06"/>
+        <text x="185" y="304" fill="#f0883e" font-size="9" font-weight="700">ZF Rane Automotive</text>
+        <text x="185" y="314" fill="#8b949e" font-size="8">India Pvt Ltd — Chennai</text>
+
+        <!-- Trichy - ZF Rane -->
+        <circle cx="168" cy="335" r="7" fill="#ffd700" opacity=".9"/>
+        <circle cx="168" cy="335" r="13" fill="#ffd700" opacity=".2"/>
+        <text x="180" y="332" fill="#ffd700" font-size="9" font-weight="700">ZF Rane Automotive</text>
+        <text x="180" y="342" fill="#8b949e" font-size="8">India Pvt. Ltd — Trichy</text>
+
+        <!-- Route lines: Noida → Pune -->
+        <line x1="158" y1="92" x2="138" y2="238" stroke="#58a6ff" stroke-width="1" stroke-dasharray="4,3" opacity=".4"/>
+        <!-- Noida → Manesar -->
+        <line x1="158" y1="92" x2="148" y2="108" stroke="#57d68a" stroke-width="1" stroke-dasharray="3,2" opacity=".5"/>
+        <!-- Chennai → Trichy -->
+        <line x1="172" y1="308" x2="168" y2="335" stroke="#ffd700" stroke-width="1" stroke-dasharray="3,2" opacity=".5"/>
+
+        <!-- Import legend -->
+        <rect x="8" y="8" width="120" height="82" rx="6" fill="rgba(0,0,0,.4)" stroke="#30363d" stroke-width=".8"/>
+        <text x="14" y="22" fill="#a371f7" font-size="8.5" font-weight="800">IMPORTS FROM:</text>
+        <text x="14" y="34" fill="#8b949e" font-size="7.5">🇰🇷 South Korea (Hankook)</text>
+        <text x="14" y="45" fill="#8b949e" font-size="7.5">🇨🇳 China (Shanghai Fangle)</text>
+        <text x="14" y="56" fill="#8b949e" font-size="7.5">🇮🇹 Italy (SPAC S.P.A.)</text>
+        <text x="14" y="67" fill="#8b949e" font-size="7.5">🇮🇩 Indonesia (Mastrotto)</text>
+        <text x="14" y="78" fill="#8b949e" font-size="7.5">🌍 Various (Embro, Q Leather)</text>
+      </svg>
+    </div>
+    <div class="section-title" style="margin-top:16px"><span>🗺️</span> Key Locations</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-bottom:16px;">
+      <div style="background:rgba(63,185,80,.1);border:1px solid rgba(63,185,80,.3);border-radius:10px;padding:12px;border-left:4px solid #3fb950">
+        <div style="font-size:11px;font-weight:700;color:#3fb950">TRW SUN STEERING WHEELS PVT LTD</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:3px">📍 Noida — Head Office</div>
+      </div>
+      <div style="background:rgba(87,214,138,.1);border:1px solid rgba(87,214,138,.3);border-radius:10px;padding:12px;border-left:4px solid #57d68a">
+        <div style="font-size:11px;font-weight:700;color:#57d68a">TRW SUN STEERING WHEELS PVT LTD</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:3px">📍 Manesar, Gurgaon — Plant</div>
+      </div>
+      <div style="background:rgba(88,166,255,.1);border:1px solid rgba(88,166,255,.3);border-radius:10px;padding:12px;border-left:4px solid #58a6ff">
+        <div style="font-size:11px;font-weight:700;color:#58a6ff">TRW SUN STEERING WHEELS PVT LTD</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:3px">📍 Pune — Manufacturing Plant</div>
+      </div>
+      <div style="background:rgba(240,136,62,.1);border:1px solid rgba(240,136,62,.3);border-radius:10px;padding:12px;border-left:4px solid #f0883e">
+        <div style="font-size:11px;font-weight:700;color:#f0883e">ZF Rane Automotive India Pvt Ltd</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:3px">📍 Chennai — Assembly Plant</div>
+      </div>
+      <div style="background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.3);border-radius:10px;padding:12px;border-left:4px solid #ffd700">
+        <div style="font-size:11px;font-weight:700;color:#ffd700">ZF Rane Automotive India Pvt. Ltd.</div>
+        <div style="font-size:10px;color:var(--text2);margin-top:3px">📍 Trichy — Supplier Plant</div>
+      </div>
+    </div>
+    <div class="section-title"><span>🏭</span> Supplier List with Item Counts</div>
+    <div class="geo-supplier-list" id="supplierList"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ SLIDE 5: RISK MATRIX ═══════════════ -->
+<div id="slide-risk" class="slide">
+  <div id="risk-container">
+    <div class="section-title"><span>⚠️</span> Supplier Risk Matrix — Lead Time vs Critical Items</div>
+    <canvas id="riskCanvas" height="420"></canvas>
+    <div id="riskLegend" style="margin-top:12px;display:flex;flex-wrap:wrap;gap:8px;justify-content:center;"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ SLIDE 6: REORDER QUEUE ═══════════════ -->
+<div id="slide-reorder" class="slide">
+  <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:14px;padding:20px;">
+    <div class="section-title"><span>📦</span> Automated Reorder Queue — Items Requiring Action</div>
+    <div class="filter-bar">
+      <input type="text" id="roSearch" placeholder="🔍 Search..." oninput="renderReorder()">
+      <select id="roStatus" onchange="renderReorder()">
+        <option value="">All Urgent Statuses</option>
+        <option>Critical</option><option>Reorder</option>
+      </select>
+      <select id="roCat" onchange="renderReorder()">
+        <option value="">All Categories</option>
+      </select>
+    </div>
+    <div class="reorder-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th>Part No</th><th>Description</th><th>Supplier</th>
+            <th>Category</th><th>UOM</th><th>Stock</th><th>Min Level</th>
+            <th>Reorder Qty</th><th>Lead Days</th><th>Status</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="reorderBody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ SLIDE 7: DEAD STOCK ═══════════════ -->
+<div id="slide-deadstock" class="slide">
+  <div class="deadstock-card">
+    <div class="section-title"><span>🗄️</span> Dead Stock Quarantine — Excess & Slow Moving Items</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:16px;">Items with excess stock or zero consumption. Estimated liquidation value based on average unit cost assumption.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px;">
+      <div style="background:var(--bg3);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:11px;color:var(--text2)">Excess Items</div>
+        <div style="font-size:28px;font-weight:800;color:var(--excess)">90</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:11px;color:var(--text2)">Est. Blocked Capital</div>
+        <div style="font-size:20px;font-weight:800;color:var(--yellow)" id="totalBlocked">Calculating...</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:11px;color:var(--text2)">Liquidation Potential</div>
+        <div style="font-size:20px;font-weight:800;color:var(--ok)" id="liquidValue">Calculating...</div>
+      </div>
+    </div>
+    <div class="ds-grid" id="deadstockGrid"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ SLIDE 8: COMPONENT TREE ═══════════════ -->
+<div id="slide-tree" class="slide">
+  <div class="tree-container">
+    <div class="section-title"><span>🌳</span> Component Hierarchy Tree — Inventory Flags</div>
+    <p style="font-size:12px;color:var(--text2);margin-bottom:16px;">
+      <span style="color:var(--critical)">🔴 Red</span> = Critical/Reorder (insufficient stock) &nbsp;
+      <span style="color:var(--ok)">🟢 Green</span> = OK &nbsp;
+      <span style="color:var(--excess)">🟣 Excess</span> = Excess stock
+    </p>
+    <div class="filter-bar">
+      <input type="text" id="treeSearch" placeholder="🔍 Search components..." oninput="renderTree()">
+    </div>
+    <div id="treeRoot" style="max-height:560px;overflow-y:auto;"></div>
+  </div>
+</div>
+
+<!-- ═══════════════ SLIDE 9: TV ALL ITEMS ═══════════════ -->
+<div id="slide-tv" class="slide" style="padding:0;">
+  <div class="tv-header">
+    <h2>📺 TRW SUN STEERING WHEELS PVT LTD — COMPLETE INVENTORY STATUS</h2>
+    <div class="tv-sub">Daily Stock Report — 30 March 2026 &bull; All Items Auto Scroll &bull; Hover to Pause</div>
+  </div>
+  <div class="tv-scroll-wrap">
+    <div class="tv-scroll-inner" id="tvScrollContent">
+      <table class="tv-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>PART NO.</th>
+            <th>PART DESCRIPTION</th>
+            <th>NAME OF SUPPLIER</th>
+            <th>CATEGORY</th>
+            <th>UOM</th>
+            <th>TODAY OPENING</th>
+            <th>STATUS</th>
+            <th>ITEM LOCATION</th>
+          </tr>
+        </thead>
+        <tbody id="tvBody1"></tbody>
+      </table>
+      <!-- Duplicate for seamless loop -->
+      <table class="tv-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>PART NO.</th>
+            <th>PART DESCRIPTION</th>
+            <th>NAME OF SUPPLIER</th>
+            <th>CATEGORY</th>
+            <th>UOM</th>
+            <th>TODAY OPENING</th>
+            <th>STATUS</th>
+            <th>ITEM LOCATION</th>
+          </tr>
+        </thead>
+        <tbody id="tvBody2"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- TOOLTIP -->
+<div id="tooltip"></div>
+
+<!-- PO MODAL -->
+<div class="modal-overlay" id="poModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closePO()">✕ Close</button>
+    <h3>📋 Purchase Order Generation</h3>
+    <div id="poContent"></div>
+    <button class="po-confirm" onclick="confirmPO()">✅ Confirm & Generate PO</button>
+  </div>
+</div>
+
+<script>
+// ═══════════════ DATA ═══════════════
+const DATA = [{"sno":1,"part_no":"B105L2898","description":"SWITCH ASSY PART NO- 96700-DY360 WK -KY","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","status":"Continue","moq":1000.0,"monthly_consp":0.0,"avg_day":0.0,"lead_time":7.0,"coverage_days":0.0,"min_level":0.0,"reorder_level":0.0,"max_level":1000.0,"today_opening":0.0,"stock_status":"Critical","location":"RACK-1"},{"sno":2,"part_no":"B105L2894","description":"SWITCH ASSY PART NO-96700-DY370 FHV -KY","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","status":"Continue","moq":10000.0,"monthly_consp":16800.0,"avg_day":700.0,"lead_time":4.0,"coverage_days":14.3,"min_level":4000.0,"reorder_level":5600.0,"max_level":10000.0,"today_opening":10000.0,"stock_status":"OK","location":"RACK-2"},{"sno":3,"part_no":"B105L2890","description":"SWITCH ASSY PART NO-96700-DY370 WK","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","status":"Continue","moq":500.0,"monthly_consp":4.34,"avg_day":0.18,"lead_time":30.0,"coverage_days":7525.2,"min_level":24.0,"reorder_level":24.0,"max_level":500.0,"today_opening":1360.8,"stock_status":"Excess","location":"RACK-3"},{"sno":4,"part_no":"B105L2896","description":"SWITCH ASSY PART NO-96770-DY000 -KY","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","status":"Continue","moq":1120.0,"monthly_consp":25842.45,"avg_day":1076.77,"lead_time":5.0,"coverage_days":0.0,"min_level":5488.0,"reorder_level":10768.0,"max_level":13552.0,"today_opening":0.0,"stock_status":"Critical","location":"RACK-4"},{"sno":5,"part_no":"B105L2895","description":"SWITCH ASSY PART NO-96780-DY000 -KY","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","status":"Continue","moq":180.0,"monthly_consp":2024.45,"avg_day":84.35,"lead_time":5.0,"coverage_days":0.0,"min_level":540.0,"reorder_level":844.0,"max_level":1080.0,"today_opening":0.0,"stock_status":"Critical","location":"RACK-5"},{"sno":6,"part_no":"B105L2889","description":"SWITCH ASSY PART NO-96700-DY260 WK","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","status":"Continue","moq":1500.0,"monthly_consp":9069.0,"avg_day":377.88,"lead_time":7.0,"coverage_days":14.6,"min_level":3000.0,"reorder_level":5290.0,"max_level":6750.0,"today_opening":5500.0,"stock_status":"OK","location":"RACK-6"},{"sno":7,"part_no":"B105L2891","description":"SWITCH ASSY PART NO-96700-DY060 WK -KY","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","status":"Continue","moq":8000.0,"monthly_consp":18138.0,"avg_day":755.75,"lead_time":3.0,"coverage_days":47.6,"min_level":2270.0,"reorder_level":4534.0,"max_level":8000.0,"today_opening":36000.0,"stock_status":"Excess","location":"RACK-7"},{"sno":8,"part_no":"B105L2897","description":"SWITCH ASSY PART NO- 96700-DY270 WK -KY","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","status":"Continue","moq":20.0,"monthly_consp":200.59,"avg_day":8.36,"lead_time":3.0,"coverage_days":1.4,"min_level":30.0,"reorder_level":50.0,"max_level":70.0,"today_opening":12.0,"stock_status":"Critical","location":"RACK-8"},{"sno":9,"part_no":"B105L2892","description":"SWITCH ASSY PART NO- 96700-DY360 FHV -KY","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","status":"Continue","moq":10000.0,"monthly_consp":18138.0,"avg_day":755.75,"lead_time":3.0,"coverage_days":55.6,"min_level":2270.0,"reorder_level":4534.0,"max_level":10000.0,"today_opening":42000.0,"stock_status":"Excess","location":"RACK-9"},{"sno":10,"part_no":"B105L2909","description":"96700-CC880 FHV- SWITCH- QY","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","status":"Continue","moq":10.0,"monthly_consp":5.17,"avg_day":0.22,"lead_time":6.0,"coverage_days":32.5,"min_level":10.0,"reorder_level":10.0,"max_level":10.0,"today_opening":7.0,"stock_status":"Critical","location":"RACK-10"},{"sno":11,"part_no":"B105L2911","description":"96700-CC880WK SWITCH -QY","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","status":"Continue","moq":1000.0,"monthly_consp":19528.0,"avg_day":813.67,"lead_time":3.0,"coverage_days":38.1,"min_level":3000.0,"reorder_level":4882.0,"max_level":7000.0,"today_opening":31000.0,"stock_status":"Excess","location":"RACK-11"},{"sno":12,"part_no":"B105L2834","description":"SWITCH ASSY. HANDSFREE YBA","supplier":"JAY USHIN LIMITED","category":"Switch","uom":"NOS","status":"Slow moving","moq":5000.0,"monthly_consp":77527.35,"avg_day":3230.31,"lead_time":15.0,"coverage_days":15.4,"min_level":48500.0,"reorder_level":96909.0,"max_level":121500.0,"today_opening":49700.0,"stock_status":"Reorder","location":"RACK-12"},{"sno":13,"part_no":"B105L2835","description":"SWITCH ASSY. HANDSFREE YBA (VR)","supplier":"JAY USHIN LIMITED","category":"Switch","uom":"NOS","status":"Slow moving","moq":5000.0,"monthly_consp":5429.42,"avg_day":226.23,"lead_time":15.0,"coverage_days":0.0,"min_level":4000.0,"reorder_level":6787.0,"max_level":9000.0,"today_opening":0.0,"stock_status":"Critical","location":"RACK-13"},{"sno":14,"part_no":"B105L2840","description":"AUDIO SWITCH (37460-68PG0)","supplier":"MINDARIKA PVT. LIMITED.","category":"Switch","uom":"NOS","status":"Slow moving","moq":3000.0,"monthly_consp":617.4,"avg_day":25.72,"lead_time":15.0,"coverage_days":0.0,"min_level":1000.0,"reorder_level":1000.0,"max_level":3000.0,"today_opening":0.0,"stock_status":"Critical","location":"RACK-14"},{"sno":15,"part_no":"B105L02885","description":"AUDIO SWITCH YL1","supplier":"MINDARIKA PVT. LIMITED.","category":"Switch","uom":"NOS","status":"Slow moving","moq":3000.0,"monthly_consp":20673.96,"avg_day":861.42,"lead_time":1.5,"coverage_days":5.5,"min_level":1300.0,"reorder_level":2584.0,"max_level":3240.0,"today_opening":4713.0,"stock_status":"Excess","location":"RACK-15"},{"sno":16,"part_no":"B105L2901","description":"AUDIO & CRUISE SWITCH","supplier":"MINDARIKA PVT. LIMITED.","category":"Switch","uom":"NOS","status":"Slow moving","moq":3000.0,"monthly_consp":722.4,"avg_day":30.1,"lead_time":15.0,"coverage_days":0.0,"min_level":1000.0,"reorder_level":1000.0,"max_level":3000.0,"today_opening":0.0,"stock_status":"Critical","location":"RACK-16"},{"sno":17,"part_no":"RM06L01209","description":"HYBRID ARMATURE -D SHAPE-QY","supplier":"SUNBEAM LIGHTWEIGHTING SOLUTIONS PRIVATE LIMITED","category":"Armature","uom":"NOS","status":"Continue","moq":3000.0,"monthly_consp":576.0,"avg_day":24.0,"lead_time":15.0,"coverage_days":0.0,"min_level":1000.0,"reorder_level":1000.0,"max_level":3000.0,"today_opening":0.0,"stock_status":"Critical","location":"RACK-17"},{"sno":18,"part_no":"RM06L01208","description":"HYBRID ARMATURE-QY(KIA)","supplier":"SUNBEAM LIGHTWEIGHTING SOLUTIONS PRIVATE LIMITED","category":"Armature","uom":"NOS","status":"Continue","moq":1000.0,"monthly_consp":19296.0,"avg_day":804.0,"lead_time":3.0,"coverage_days":2.1,"min_level":2412.0,"reorder_level":4824.0,"max_level":6030.0,"today_opening":1663.0,"stock_status":"Critical","location":"RACK-18"},{"sno":19,"part_no":"RM09L15011","description":"HYBRID ARMATURE PADDLE SHIFTER-QY","supplier":"SUNBEAM LIGHTWEIGHTING SOLUTIONS PRIVATE LIMITED","category":"Armature","uom":"NOS","status":"Continue","moq":100.0,"monthly_consp":5168.49,"avg_day":215.35,"lead_time":1.5,"coverage_days":3.2,"min_level":360.0,"reorder_level":646.0,"max_level":900.0,"today_opening":680.0,"stock_status":"OK","location":"RACK-19"},{"sno":20,"part_no":"RM09L15012","description":"ARMATURE YG8","supplier":"IBEX ENGINEERING PVT. LTD.","category":"Armature","uom":"NOS","status":"Continue","moq":25.0,"monthly_consp":138.99,"avg_day":5.79,"lead_time":4.0,"coverage_days":8.6,"min_level":25.0,"reorder_level":46.0,"max_level":75.0,"today_opening":50.0,"stock_status":"OK","location":"RACK-20"},{"sno":21,"part_no":"B113I03500","description":"ARMATURE -YL1","supplier":"SHANGHAI FANGLE AUTO PARTS CO. LTD.","category":"Import","uom":"NOS","status":"Continue","moq":1000.0,"monthly_consp":5168.49,"avg_day":215.35,"lead_time":1.5,"coverage_days":9.8,"min_level":432.0,"reorder_level":646.0,"max_level":1000.0,"today_opening":2100.0,"stock_status":"Excess","location":"RACK-21"},{"sno":22,"part_no":"RM09I00300","description":"LEATHER COLOUR- NERO Q7017","supplier":"Q Leather","category":"Import","uom":"SQM","status":"Obsolete","moq":10.0,"monthly_consp":754.45,"avg_day":31.44,"lead_time":7.0,"coverage_days":10.4,"min_level":230.0,"reorder_level":440.0,"max_level":560.0,"today_opening":328.0,"stock_status":"Reorder","location":"RACK-22"},{"sno":23,"part_no":"RM09I00308","description":"LEATHER -ARX 288","supplier":"SPAC S.P.A.","category":"Import","uom":"SQ.MTR","status":"Continue","moq":1000.0,"monthly_consp":930.12,"avg_day":38.76,"lead_time":7.0,"coverage_days":22.6,"min_level":275.0,"reorder_level":543.0,"max_level":1000.0,"today_opening":875.0,"stock_status":"OK","location":"RACK-23"},{"sno":24,"part_no":"RM09I00310","description":"LEATHER (COLOR CODE-N2V)","supplier":"SPAC S.P.A.","category":"Import","uom":"SQ.MTR","status":"Continue","moq":3000.0,"monthly_consp":14248.0,"avg_day":593.67,"lead_time":1.5,"coverage_days":4.0,"min_level":894.0,"reorder_level":1781.0,"max_level":3000.0,"today_opening":2400.0,"stock_status":"OK","location":"RACK-24"},{"sno":25,"part_no":"RM05I04103","description":"EMBLEM ASSY-KY","supplier":"HANKOOK NATIONAL CO., LTD.","category":"Import","uom":"NOS","status":"Continue","moq":180.0,"monthly_consp":9536.0,"avg_day":397.33,"lead_time":3.0,"coverage_days":0.9,"min_level":1260.0,"reorder_level":2384.0,"max_level":3060.0,"today_opening":360.0,"stock_status":"Critical","location":"RACK-25"},{"sno":26,"part_no":"RM05I04104","description":"NEW SONET EMBLEM ASSY.","supplier":"HANKOOK NATIONAL CO., LTD.","category":"Import","uom":"NOS","status":"Continue","moq":20.0,"monthly_consp":2034.97,"avg_day":84.79,"lead_time":1.5,"coverage_days":9.7,"min_level":250.0,"reorder_level":254.0,"max_level":375.0,"today_opening":825.0,"stock_status":"Excess","location":"RACK-26"},{"sno":27,"part_no":"RM05I04105","description":"NEW GT LINE EMBLEM","supplier":"HANKOOK NATIONAL CO., LTD.","category":"Import","uom":"NOS","status":"Continue","moq":10.0,"monthly_consp":15.0,"avg_day":0.62,"lead_time":7.0,"coverage_days":91.2,"min_level":10.0,"reorder_level":10.0,"max_level":20.0,"today_opening":57.0,"stock_status":"Excess","location":"RACK-27"},{"sno":28,"part_no":"B112L04614","description":"WIRE HARNESS ASSY. -KY","supplier":"DS CONNECTORS AND CABLES INDIA PRIVATE LIMITED","category":"Wiring Harness","uom":"NOS","status":"Continue","moq":20.0,"monthly_consp":29.91,"avg_day":1.25,"lead_time":7.0,"coverage_days":48.1,"min_level":400.0,"reorder_level":400.0,"max_level":400.0,"today_opening":60.0,"stock_status":"Critical","location":"RACK-28"},{"sno":29,"part_no":"B112L04615","description":"WIRE HARNESS ASSY.-KY (A020V541)","supplier":"DS CONNECTORS AND CABLES INDIA PRIVATE LIMITED","category":"Wiring Harness","uom":"NOS","status":"Continue","moq":100.0,"monthly_consp":12.09,"avg_day":0.5,"lead_time":1.5,"coverage_days":0.0,"min_level":400.0,"reorder_level":400.0,"max_level":400.0,"today_opening":0.0,"stock_status":"Critical","location":"RACK-29"},{"sno":30,"part_no":"B112L04616","description":"WIRE HARNESS ASSY. (PS) -KY","supplier":"DS CONNECTORS AND CABLES INDIA PRIVATE LIMITED","category":"Wiring Harness","uom":"NOS","status":"Continue","moq":1000.0,"monthly_consp":0.0,"avg_day":0.0,"lead_time":12.0,"coverage_days":0.0,"min_level":0.0,"reorder_level":0.0,"max_level":1000.0,"today_opening":0.0,"stock_status":"Critical","location":"RACK-30"},{"sno":31,"part_no":"RM01L47084","description":"CRC D SHEET HORN PLATE","supplier":"HERO STEELS LIMITED","category":"Steel Strip","uom":"KG","status":"Send to third party","moq":4000.0,"monthly_consp":25842.45,"avg_day":1076.77,"lead_time":1.5,"coverage_days":4.6,"min_level":2000.0,"reorder_level":3230.0,"max_level":5000.0,"today_opening":5000.0,"stock_status":"OK","location":"RACK-31"},{"sno":32,"part_no":"RM01L47043","description":"C.R.C.A. STEEL STRIP 1250X161X1.2","supplier":"HERO STEELS LIMITED","category":"Steel Strip","uom":"KG","status":"Send to third party","moq":1350.0,"monthly_consp":4200.0,"avg_day":175.0,"lead_time":5.0,"coverage_days":30.6,"min_level":945.0,"reorder_level":1750.0,"max_level":2295.0,"today_opening":5352.0,"stock_status":"Excess","location":"RACK-32"},{"sno":33,"part_no":"RM01L01400","description":"C.R.C.A STRIP-D 80x0.8MM (COIL)","supplier":"HERO STEELS LIMITED","category":"Steel Strip","uom":"KG","status":"Send to third party","moq":800.0,"monthly_consp":16118.0,"avg_day":671.58,"lead_time":12.0,"coverage_days":13.8,"min_level":8400.0,"reorder_level":16118.0,"max_level":20400.0,"today_opening":9300.0,"stock_status":"Reorder","location":"RACK-33"},{"sno":34,"part_no":"RM01L47042","description":"C.R.C.A. STEEL STRIP 1085X90X2.5","supplier":"HERO STEELS LIMITED","category":"Steel Strip","uom":"KG","status":"Send to third party","moq":2000.0,"monthly_consp":8400.0,"avg_day":350.0,"lead_time":15.0,"coverage_days":57.1,"min_level":6000.0,"reorder_level":10500.0,"max_level":14000.0,"today_opening":20000.0,"stock_status":"Excess","location":"RACK-34"},{"sno":35,"part_no":"RM01L47073","description":"CRCA STEEL STRIP SP-BD SHAPE","supplier":"HERO STEELS LIMITED","category":"Steel Strip","uom":"KG","status":"Send to third party","moq":1400.0,"monthly_consp":7263.08,"avg_day":302.63,"lead_time":4.0,"coverage_days":12.6,"min_level":1400.0,"reorder_level":2421.0,"max_level":3200.0,"today_opening":3800.0,"stock_status":"Excess","location":"RACK-35"},{"sno":40,"part_no":"RM02L01710","description":"STEEL BAR 9.20 MMX3000MM","supplier":"LAXMI MAHIMA METAL ALLOY (P) LTD.","category":"Steel Bar","uom":"KG","status":"Send to third party","moq":180.0,"monthly_consp":4882.0,"avg_day":203.42,"lead_time":3.0,"coverage_days":6.7,"min_level":720.0,"reorder_level":1220.0,"max_level":1620.0,"today_opening":1369.0,"stock_status":"OK","location":"RACK-40"},{"sno":42,"part_no":"RM05L09962","description":"HCPP PLPP_21357T2 PP-TD20 QY KIA","supplier":"DAEHA PLASTIC COMPOUND INDIA PVT LTD","category":"PP","uom":"KG","status":"Continue","moq":20000.0,"monthly_consp":86722.7,"avg_day":3613.45,"lead_time":15.0,"coverage_days":7.2,"min_level":56000.0,"reorder_level":108403.0,"max_level":136000.0,"today_opening":26000.0,"stock_status":"Critical","location":"RACK-42"},{"sno":43,"part_no":"RM05L09965","description":"HCPP PP-TD20 N2V","supplier":"DAEHA PLASTIC COMPOUND INDIA PVT LTD","category":"PP","uom":"KG","status":"Continue","moq":300.0,"monthly_consp":5168.49,"avg_day":215.35,"lead_time":1.5,"coverage_days":2.3,"min_level":325.0,"reorder_level":646.0,"max_level":825.0,"today_opening":500.0,"stock_status":"Reorder","location":"RACK-43"},{"sno":44,"part_no":"RM05L09941","description":"PP 3030 MAKE IOCL","supplier":"INDIAN OIL CORPORATION LTD","category":"PP","uom":"KG","status":"Continue","moq":400.0,"monthly_consp":1664.45,"avg_day":69.35,"lead_time":12.0,"coverage_days":23.1,"min_level":1200.0,"reorder_level":1664.0,"max_level":2400.0,"today_opening":1600.0,"stock_status":"Reorder","location":"RACK-44"},{"sno":50,"part_no":"RM07L29058","description":"ELASTOFOAM EL 4510/154","supplier":"BASF INDIA LTD","category":"Chemical","uom":"KG","status":"Continue","moq":20.0,"monthly_consp":859.85,"avg_day":35.83,"lead_time":1.5,"coverage_days":40.6,"min_level":200.0,"reorder_level":200.0,"max_level":200.0,"today_opening":1455.0,"stock_status":"Excess","location":"RACK-50"},{"sno":51,"part_no":"RM07L29059","description":"ISO 134/56 EX INDIA","supplier":"BASF INDIA LTD","category":"Chemical","uom":"KG","status":"Continue","moq":10.0,"monthly_consp":720.0,"avg_day":30.0,"lead_time":7.0,"coverage_days":7.0,"min_level":210.0,"reorder_level":420.0,"max_level":530.0,"today_opening":210.0,"stock_status":"Critical","location":"RACK-51"},{"sno":57,"part_no":"RM07L24000","description":"P.U.COLOUR PASTE BLACK 5PK","supplier":"CHEMIE PRODUCTS PRIVATE LIMITED","category":"Chemical","uom":"KG","status":"Continue","moq":180.0,"monthly_consp":9400.0,"avg_day":391.67,"lead_time":5.0,"coverage_days":0.9,"min_level":1980.0,"reorder_level":3917.0,"max_level":5040.0,"today_opening":360.0,"stock_status":"Critical","location":"RACK-57"},{"sno":71,"part_no":"B108L33010","description":"BRASS RIVET -QY (Lower Side)","supplier":"TKW FASTENERS P. LTD.","category":"Other Bop","uom":"NOS","status":"Continue","moq":2000.0,"monthly_consp":142290.7,"avg_day":5928.78,"lead_time":15.0,"coverage_days":6.7,"min_level":90000.0,"reorder_level":177863.0,"max_level":224000.0,"today_opening":40000.0,"stock_status":"Critical","location":"RACK-71"},{"sno":82,"part_no":"B102L01725","description":"BOSS SF -QY (KIA)","supplier":"HI-TECH INDUSTRIES","category":"Other Bop","uom":"NOS","status":"Send to third party","moq":360.0,"monthly_consp":14437.5,"avg_day":601.56,"lead_time":7.0,"coverage_days":2.6,"min_level":4320.0,"reorder_level":8422.0,"max_level":10620.0,"today_opening":1579.0,"stock_status":"Critical","location":"RACK-82"},{"sno":91,"part_no":"B109L04710","description":"THREAD GRAY-ARTICLE 2902","supplier":"THREADS (INDIA) LIMITED","category":"Other Bop","uom":"NOS","status":"Slow moving","moq":20000.0,"monthly_consp":103369.8,"avg_day":4307.07,"lead_time":15.0,"coverage_days":5.3,"min_level":65000.0,"reorder_level":129212.0,"max_level":165000.0,"today_opening":22792.0,"stock_status":"Critical","location":"RACK-91"},{"sno":100,"part_no":"B112L04619","description":"WIRE HARNESS PART-B L=190MM","supplier":"TECHNOCRAT CONNECTIVITY SYSTEMS PVT. LTD.","category":"Other Bop","uom":"NOS","status":"Continue","moq":10000.0,"monthly_consp":39060.0,"avg_day":1627.5,"lead_time":15.0,"coverage_days":7.4,"min_level":26000.0,"reorder_level":48825.0,"max_level":62000.0,"today_opening":12000.0,"stock_status":"Critical","location":"RACK-100"}];
+
+// Full data for TV slide - we embed all 393 items
+const ALL_DATA = [{"sno":1,"part_no":"B105L2898","description":"SWITCH ASSY PART NO- 96700-DY360 WK -KY","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-1"},{"sno":2,"part_no":"B105L2894","description":"SWITCH ASSY PART NO-96700-DY370 FHV -KY","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","today_opening":10000.0,"stock_status":"OK","location":"RACK-2"},{"sno":3,"part_no":"B105L2890","description":"SWITCH ASSY PART NO-96700-DY370 WK","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","today_opening":1360.8,"stock_status":"Excess","location":"RACK-3"},{"sno":4,"part_no":"B105L2896","description":"SWITCH ASSY PART NO-96770-DY000 -KY","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-4"},{"sno":5,"part_no":"B105L2895","description":"SWITCH ASSY PART NO-96780-DY000 -KY","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-5"},{"sno":6,"part_no":"B105L2889","description":"SWITCH ASSY PART NO-96700-DY260 WK","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","today_opening":5500.0,"stock_status":"OK","location":"RACK-6"},{"sno":7,"part_no":"B105L2891","description":"SWITCH ASSY PART NO-96700-DY060 WK -KY","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","today_opening":36000.0,"stock_status":"Excess","location":"RACK-7"},{"sno":8,"part_no":"B105L2897","description":"SWITCH ASSY PART NO- 96700-DY270 WK -KY","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","today_opening":12.0,"stock_status":"Critical","location":"RACK-8"},{"sno":9,"part_no":"B105L2892","description":"SWITCH ASSY PART NO- 96700-DY360 FHV -KY","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","today_opening":42000.0,"stock_status":"Excess","location":"RACK-9"},{"sno":10,"part_no":"B105L2909","description":"96700-CC880 FHV- SWITCH- QY","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","today_opening":7.0,"stock_status":"Critical","location":"RACK-10"},{"sno":11,"part_no":"B105L2911","description":"96700-CC880WK SWITCH -QY","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","today_opening":31000.0,"stock_status":"Excess","location":"RACK-11"},{"sno":12,"part_no":"B105L2834","description":"SWITCH ASSY. HANDSFREE YBA (BT)","supplier":"JAY USHIN LIMITED","category":"Switch","uom":"NOS","today_opening":49700.0,"stock_status":"Reorder","location":"RACK-12"},{"sno":13,"part_no":"B105L2835","description":"SWITCH ASSY. HANDSFREE YBA (VR)","supplier":"JAY USHIN LIMITED","category":"Switch","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-13"},{"sno":14,"part_no":"B105L2840","description":"AUDIO SWITCH (37460-68PG0)","supplier":"MINDARIKA PVT. LIMITED.","category":"Switch","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-14"},{"sno":15,"part_no":"B105L02885","description":"AUDIO SWITCH YL1 (37460M68PFO)","supplier":"MINDARIKA PVT. LIMITED.","category":"Switch","uom":"NOS","today_opening":4713.0,"stock_status":"Excess","location":"RACK-15"},{"sno":16,"part_no":"B105L2901","description":"AUDIO & CRUISE SWITCH (37460-68PH1)","supplier":"MINDARIKA PVT. LIMITED.","category":"Switch","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-16"},{"sno":17,"part_no":"RM06L01209","description":"HYBRID ARMATURE -D SHAPE-QY (KIA)","supplier":"SUNBEAM LIGHTWEIGHTING SOLUTIONS PRIVATE LIMITED","category":"Armature","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-17"},{"sno":18,"part_no":"RM06L01208","description":"HYBRID ARMATURE-QY(KIA)","supplier":"SUNBEAM LIGHTWEIGHTING SOLUTIONS PRIVATE LIMITED","category":"Armature","uom":"NOS","today_opening":1663.0,"stock_status":"Critical","location":"RACK-18"},{"sno":19,"part_no":"RM09L15011","description":"HYBRID ARMATURE PADDLE SHIFTER-QY","supplier":"SUNBEAM LIGHTWEIGHTING SOLUTIONS PRIVATE LIMITED","category":"Armature","uom":"NOS","today_opening":680.0,"stock_status":"OK","location":"RACK-19"},{"sno":20,"part_no":"RM09L15012","description":"ARMATURE YG8","supplier":"IBEX ENGINEERING PVT. LTD.","category":"Armature","uom":"NOS","today_opening":50.0,"stock_status":"OK","location":"RACK-20"},{"sno":21,"part_no":"B113I03500","description":"ARMATURE -YL1","supplier":"SHANGHAI FANGLE AUTO PARTS CO. LTD.","category":"Import","uom":"NOS","today_opening":2100.0,"stock_status":"Excess","location":"RACK-21"},{"sno":22,"part_no":"RM09I00300","description":"LEATHER COLOUR- NERO Q7017","supplier":"Q Leather","category":"Import","uom":"SQM","today_opening":328.0,"stock_status":"Reorder","location":"RACK-22"},{"sno":23,"part_no":"RM09I00308","description":"LEATHER -ARX 288","supplier":"SPAC S.P.A.","category":"Import","uom":"SQ.MTR","today_opening":875.0,"stock_status":"OK","location":"RACK-23"},{"sno":24,"part_no":"RM09I00310","description":"LEATHER (COLOR CODE-N2V)","supplier":"SPAC S.P.A.","category":"Import","uom":"SQ.MTR","today_opening":2400.0,"stock_status":"OK","location":"RACK-24"},{"sno":25,"part_no":"RM05I04103","description":"EMBLEM ASSY-KY (P/N: A21H684 A)","supplier":"HANKOOK NATIONAL CO., LTD.","category":"Import","uom":"NOS","today_opening":360.0,"stock_status":"Critical","location":"RACK-25"},{"sno":26,"part_no":"RM05I04104","description":"NEW SONET EMBLEM ASSY.","supplier":"HANKOOK NATIONAL CO., LTD.","category":"Import","uom":"NOS","today_opening":825.0,"stock_status":"Excess","location":"RACK-26"},{"sno":27,"part_no":"RM05I04105","description":"NEW GT LINE EMBLEM","supplier":"HANKOOK NATIONAL CO., LTD.","category":"Import","uom":"NOS","today_opening":57.0,"stock_status":"Excess","location":"RACK-27"},{"sno":28,"part_no":"B112L04614","description":"WIRE HARNESS ASSY. -KY (A020V540)","supplier":"DS CONNECTORS AND CABLES INDIA PRIVATE LIMITED","category":"Wiring Harness","uom":"NOS","today_opening":60.0,"stock_status":"Critical","location":"RACK-28"},{"sno":29,"part_no":"B112L04615","description":"WIRE HARNESS ASSY.-KY (A020V541)","supplier":"DS CONNECTORS AND CABLES INDIA PRIVATE LIMITED","category":"Wiring Harness","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-29"},{"sno":30,"part_no":"B112L04616","description":"WIRE HARNESS ASSY. (PS) -KY","supplier":"DS CONNECTORS AND CABLES INDIA PRIVATE LIMITED","category":"Wiring Harness","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-30"},{"sno":31,"part_no":"RM01L47084","description":"CRC D SHEET 1205X165X1.6 MM HORN PLATE","supplier":"HERO STEELS LIMITED","category":"Steel Strip","uom":"KG","today_opening":5000.0,"stock_status":"OK","location":"RACK-31"},{"sno":32,"part_no":"RM01L47043","description":"C.R.C.A. STEEL STRIP 1250X161X1.2 MM","supplier":"HERO STEELS LIMITED","category":"Steel Strip","uom":"KG","today_opening":5352.0,"stock_status":"Excess","location":"RACK-32"},{"sno":33,"part_no":"RM01L01400","description":"C.R.C.A STRIP-D 80x0.8MM (COIL)","supplier":"HERO STEELS LIMITED","category":"Steel Strip","uom":"KG","today_opening":9300.0,"stock_status":"Reorder","location":"RACK-33"},{"sno":34,"part_no":"RM01L47042","description":"C.R.C.A. STEEL STRIP 1085X90X2.5 MM","supplier":"HERO STEELS LIMITED","category":"Steel Strip","uom":"KG","today_opening":20000.0,"stock_status":"Excess","location":"RACK-34"},{"sno":35,"part_no":"RM01L47073","description":"CRCA,D 1115X124X3.5 MM (SP-BD SHAPE)","supplier":"HERO STEELS LIMITED","category":"Steel Strip","uom":"KG","today_opening":3800.0,"stock_status":"Excess","location":"RACK-35"},{"sno":36,"part_no":"RM01L47078","description":"HR.OP SHEET 1115X153X4.0 MM SP-A","supplier":"HERO STEELS LIMITED","category":"Steel Strip","uom":"KG","today_opening":73.0,"stock_status":"Excess","location":"RACK-36"},{"sno":37,"part_no":"RM01L47050","description":"HR OP SHEET 1060X177X3.5","supplier":"HERO STEELS LIMITED","category":"Steel Strip","uom":"KG.","today_opening":2100.0,"stock_status":"Excess","location":"RACK-37"},{"sno":38,"part_no":"RM01L47059","description":"HR OP SHEET 1050X160X3.5","supplier":"HERO STEELS LIMITED","category":"Steel Strip","uom":"KG.","today_opening":176.0,"stock_status":"Reorder","location":"RACK-38"},{"sno":39,"part_no":"RM01L47074","description":"HROP -1115X132X3.5 MM (SP-BR SHAPE)","supplier":"HERO STEELS LIMITED","category":"Steel Strip","uom":"KG","today_opening":0.0,"stock_status":"Critical","location":"RACK-39"},{"sno":40,"part_no":"RM02L01710","description":"STEEL BAR 9.20 MMX3000MM","supplier":"LAXMI MAHIMA METAL ALLOY (P) LTD.","category":"Steel Bar","uom":"KG","today_opening":1369.0,"stock_status":"OK","location":"RACK-40"},{"sno":41,"part_no":"RM03L00932","description":"STEEL TUBE 12.7 X 1.8 X 3200MM","supplier":"PROMPT ENTERPRISES PVT. LTD.","category":"Steel Tube","uom":"MTR","today_opening":0.0,"stock_status":"Critical","location":"RACK-41"},{"sno":42,"part_no":"RM05L09962","description":"HCPP PLPP_21357T2 PP-TD20 MS QY KIA","supplier":"DAEHA PLASTIC COMPOUND INDIA PVT LTD","category":"PP","uom":"KG","today_opening":26000.0,"stock_status":"Critical","location":"RACK-42"},{"sno":43,"part_no":"RM05L09965","description":"HCPP PLPP_21357T2 PP-TD20 N2V","supplier":"DAEHA PLASTIC COMPOUND INDIA PVT LTD","category":"PP","uom":"KG","today_opening":500.0,"stock_status":"Reorder","location":"RACK-43"},{"sno":44,"part_no":"RM05L09941","description":"PP 3030 MAKE IOCL","supplier":"INDIAN OIL CORPORATION LTD","category":"PP","uom":"KG","today_opening":1600.0,"stock_status":"Reorder","location":"RACK-44"},{"sno":45,"part_no":"RM05L09935","description":"PC+ABS (T-65XF)","supplier":"RAI INNOTECH PVT. LTD.","category":"PP","uom":"KG","today_opening":1900.0,"stock_status":"Reorder","location":"RACK-45"},{"sno":46,"part_no":"RM06L00600","description":"MASTER BATCH JET BLACK 330/333","supplier":"DIRCO POLYMERS PVT. LTD.","category":"PP","uom":"KG","today_opening":5470.0,"stock_status":"Excess","location":"RACK-46"},{"sno":47,"part_no":"RM05L09963","description":"PP TPE -13190","supplier":"SUN VACUUM FORMERS PVT. LTD.","category":"PP","uom":"KG","today_opening":5700.0,"stock_status":"Excess","location":"RACK-47"},{"sno":48,"part_no":"B105L00139","description":"SWITCH LOWER U201","supplier":"SUN VACUUM FORMERS PVT. LTD.","category":"Other Bop","uom":"NOS","today_opening":22000.0,"stock_status":"Excess","location":"RACK-48"},{"sno":49,"part_no":"B105L00138","description":"SWITCH UPPER U201","supplier":"SUN VACUUM FORMERS PVT. LTD.","category":"Other Bop","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-49"},{"sno":50,"part_no":"RM07L29058","description":"ELASTOFOAM EL 4510/154 C-A","supplier":"BASF INDIA LTD","category":"Chemical","uom":"KG","today_opening":1455.0,"stock_status":"Excess","location":"RACK-50"},{"sno":51,"part_no":"RM07L29059","description":"ISO 134/56 EX INDIA","supplier":"BASF INDIA LTD","category":"Chemical","uom":"KG","today_opening":210.0,"stock_status":"Critical","location":"RACK-51"},{"sno":52,"part_no":"RM07L29054","description":"T-915 THINNER (BTX FREE)","supplier":"NOROO BEE AUTOMOTIVE COATING INDIA PRIVATE LIMITED","category":"Chemical","uom":"LTR","today_opening":90.0,"stock_status":"Reorder","location":"RACK-52"},{"sno":53,"part_no":"RM07L29052","description":"T-975 THINNER (BTX FREE)","supplier":"NOROO BEE AUTOMOTIVE COATING INDIA PRIVATE LIMITED","category":"Chemical","uom":"LTR","today_opening":80.0,"stock_status":"Reorder","location":"RACK-53"},{"sno":54,"part_no":"RM07L29053","description":"DR-247 QA1 (BTX FREE)","supplier":"NOROO BEE AUTOMOTIVE COATING INDIA PRIVATE LIMITED","category":"Chemical","uom":"LTR","today_opening":420.0,"stock_status":"Critical","location":"RACK-54"},{"sno":55,"part_no":"RM07L29051","description":"DB-162 HARDENER (BTX FREE)","supplier":"NOROO BEE AUTOMOTIVE COATING INDIA PRIVATE LIMITED","category":"Chemical","uom":"LTR","today_opening":1205.0,"stock_status":"Critical","location":"RACK-55"},{"sno":56,"part_no":"RM07L29050","description":"DP-2811 SOLID PRIMER BTX FREE","supplier":"NOROO BEE AUTOMOTIVE COATING INDIA PRIVATE LIMITED","category":"Chemical","uom":"LTR","today_opening":90.0,"stock_status":"Critical","location":"RACK-56"},{"sno":57,"part_no":"RM07L24000","description":"P.U.COLOUR PASTE BLACK 5PK","supplier":"CHEMIE PRODUCTS PRIVATE LIMITED","category":"Chemical","uom":"KG","today_opening":360.0,"stock_status":"Critical","location":"RACK-57"},{"sno":58,"part_no":"C120L10983","description":"MRF METAL COAT PRIMER.(4 LTR PACK)","supplier":"MRF CORP LIMITED","category":"Chemical","uom":"NOS","today_opening":262.0,"stock_status":"Excess","location":"RACK-58"},{"sno":59,"part_no":"C120L10984","description":"MRF THINNER FOR FINISH","supplier":"MRF CORP LIMITED","category":"Chemical","uom":"NOS","today_opening":2000.0,"stock_status":"Critical","location":"RACK-59"},{"sno":60,"part_no":"C120L05901","description":"CHEM TREND PU 15149 W","supplier":"CHEM-TREND CHEMICALS COMPANY PRIVATE LIMITED","category":"Chemical","uom":"LTR","today_opening":4965.0,"stock_status":"Reorder","location":"RACK-60"},{"sno":61,"part_no":"R02C111L5400","description":"GLUE ISARCOLL 5109","supplier":"H.B.FULLER INDIA ADHESIVES PVT. LTD.","category":"Chemical","uom":"KG","today_opening":2500.0,"stock_status":"Critical","location":"RACK-61"},{"sno":62,"part_no":"R02C111L5500","description":"THINNER 5109 FOR GLUE ISARCOLL","supplier":"H.B.FULLER INDIA ADHESIVES PVT. LTD.","category":"Chemical","uom":"KG","today_opening":85000.0,"stock_status":"Reorder","location":"RACK-62"},{"sno":63,"part_no":"RM07L29003","description":"IMC BLACK 61005.","supplier":"PREMIUM COATINGS & CHEMICALS PVT LTD","category":"Chemical","uom":"KG","today_opening":1240.0,"stock_status":"Critical","location":"RACK-63"},{"sno":64,"part_no":"RI0607MAT005","description":"R 255 HARDNER","supplier":"BERGER NIPPON PAINT AUTOMOTIVE COATINGS PVT. LTD.","category":"Chemical","uom":"LTR","today_opening":349.0,"stock_status":"Critical","location":"RACK-64"},{"sno":65,"part_no":"RI0607MAT009","description":"R248 5 PK PAINT","supplier":"BERGER NIPPON PAINT AUTOMOTIVE COATINGS PVT. LTD.","category":"Chemical","uom":"LTR","today_opening":4000.0,"stock_status":"Excess","location":"RACK-65"},{"sno":66,"part_no":"RI0602MAT014","description":"THINNER 510","supplier":"BERGER NIPPON PAINT AUTOMOTIVE COATINGS PVT. LTD.","category":"Chemical","uom":"LTR","today_opening":851.0,"stock_status":"Critical","location":"RACK-66"},{"sno":67,"part_no":"RI0602MAT016","description":"THINNER 801","supplier":"BERGER NIPPON PAINT AUTOMOTIVE COATINGS PVT. LTD.","category":"Chemical","uom":"LTR","today_opening":75.0,"stock_status":"Reorder","location":"RACK-67"},{"sno":68,"part_no":"RI0601MAT033","description":"ZML PAINT R241.","supplier":"BERGER NIPPON PAINT AUTOMOTIVE COATINGS PVT. LTD.","category":"Chemical","uom":"LTR","today_opening":0.0,"stock_status":"Critical","location":"RACK-68"},{"sno":69,"part_no":"B108L02700","description":"LOWER COPPER CONTACT 2.5X4MM","supplier":"ELECTRACON PARADISE LIMITED","category":"Other Bop","uom":"NOS","today_opening":7.0,"stock_status":"Reorder","location":"RACK-69"},{"sno":70,"part_no":"B108L02800","description":"UPPER COPPER CONTACT 2.5X5.5MM","supplier":"ELECTRACON PARADISE LIMITED","category":"Other Bop","uom":"NOS","today_opening":100.0,"stock_status":"OK","location":"RACK-70"},{"sno":71,"part_no":"B108L33010","description":"BRASS RIVET -QY (Lower Side)","supplier":"TKW FASTENERS P. LTD.","category":"Other Bop","uom":"NOS","today_opening":40000.0,"stock_status":"Critical","location":"RACK-71"},{"sno":72,"part_no":"B108L33011","description":"COPPER RIVET-QY (Upper Side)","supplier":"TKW FASTENERS P. LTD.","category":"Other Bop","uom":"NOS","today_opening":200.0,"stock_status":"OK","location":"RACK-72"},{"sno":73,"part_no":"B108L33015","description":"COPPER RIVET YG-8","supplier":"TKW FASTENERS P. LTD.","category":"Other Bop","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-73"},{"sno":74,"part_no":"B110L06300","description":"SCREW M5x8","supplier":"TKW FASTENERS P. LTD.","category":"Other Bop","uom":"NOS","today_opening":785.0,"stock_status":"Reorder","location":"RACK-74"},{"sno":75,"part_no":"B110L00400","description":"SCREW 3X12","supplier":"TKW FASTENERS P. LTD.","category":"Other Bop","uom":"NOS","today_opening":175.0,"stock_status":"OK","location":"RACK-75"},{"sno":76,"part_no":"B110L06935","description":"SCREW BT M4X12-QY","supplier":"TKW FASTENERS P. LTD.","category":"Other Bop","uom":"NOS","today_opening":489.0,"stock_status":"Excess","location":"RACK-76"},{"sno":77,"part_no":"B110L01800","description":"SCREW M3X8 forged washer","supplier":"TKW FASTENERS P. LTD.","category":"Other Bop","uom":"NOS","today_opening":20.0,"stock_status":"OK","location":"RACK-77"},{"sno":78,"part_no":"B11L06922","description":"SCREW M4 X 16 BT TRIVALENT","supplier":"TKW FASTENERS P. LTD.","category":"Other Bop","uom":"NOS","today_opening":336.0,"stock_status":"Excess","location":"RACK-78"},{"sno":79,"part_no":"B110L00500","description":"SCREW M4X10 DOUBLE WASHER","supplier":"TKW FASTENERS P. LTD.","category":"Other Bop","uom":"NOS","today_opening":60.0,"stock_status":"Excess","location":"RACK-79"},{"sno":80,"part_no":"B110L06919","description":"SCREW M4X14 TRIVALENT","supplier":"TKW FASTENERS P. LTD.","category":"Other Bop","uom":"NOS","today_opening":2760.0,"stock_status":"Excess","location":"RACK-80"},{"sno":81,"part_no":"B110L06936","description":"STOP BOLT M5X19-QY","supplier":"TKW FASTENERS P. LTD.","category":"Other Bop","uom":"NOS","today_opening":32000.0,"stock_status":"Excess","location":"RACK-81"},{"sno":82,"part_no":"B102L01725","description":"BOSS SF -QY (KIA)","supplier":"HI-TECH INDUSTRIES","category":"Other Bop","uom":"NOS","today_opening":1579.0,"stock_status":"Critical","location":"RACK-82"},{"sno":83,"part_no":"B102L01731","description":"BOSS S.F M0 (RENO)","supplier":"HI-TECH INDUSTRIES","category":"Other Bop","uom":"NOS","today_opening":20000.0,"stock_status":"OK","location":"RACK-83"},{"sno":84,"part_no":"B102L01739","description":"FINISH BOSS Y9T","supplier":"HI-TECH INDUSTRIES","category":"Other Bop","uom":"NOS","today_opening":30.0,"stock_status":"Reorder","location":"RACK-84"},{"sno":85,"part_no":"B102L01740","description":"S.F BOSS YG8","supplier":"HI-TECH INDUSTRIES","category":"Other Bop","uom":"NOS","today_opening":22980.0,"stock_status":"Critical","location":"RACK-85"},{"sno":86,"part_no":"B102L01742","description":"BOSS S.F PY1B","supplier":"HI-TECH INDUSTRIES","category":"Other Bop","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-86"},{"sno":87,"part_no":"B105L02868","description":"GARNISH C YL1 PLATED","supplier":"SPECULUM PLAST PVT. LTD.","category":"Other Bop","uom":"NOS","today_opening":6500.0,"stock_status":"Excess","location":"RACK-87"},{"sno":88,"part_no":"B105L2829","description":"GARNISH L YL1 PLATED","supplier":"SPECULUM PLAST PVT. LTD.","category":"Other Bop","uom":"NOS","today_opening":1132.0,"stock_status":"Excess","location":"RACK-88"},{"sno":89,"part_no":"B105L2830","description":"GARNISH R YL1 PLATED","supplier":"SPECULUM PLAST PVT. LTD.","category":"Other Bop","uom":"NOS","today_opening":521.0,"stock_status":"Excess","location":"RACK-89"},{"sno":90,"part_no":"B109L04707","description":"THREAD BLACK TKT-20","supplier":"THREADS (INDIA) LIMITED","category":"Other Bop","uom":"NOS","today_opening":433.0,"stock_status":"Excess","location":"RACK-90"},{"sno":91,"part_no":"B109L04710","description":"THREAD GRAY ARTICLE 2902","supplier":"THREADS (INDIA) LIMITED","category":"Other Bop","uom":"NOS","today_opening":22792.0,"stock_status":"Critical","location":"RACK-91"},{"sno":92,"part_no":"B109L04711","description":"THREAD BLUE ARTICLE 2902","supplier":"THREADS (INDIA) LIMITED","category":"Other Bop","uom":"NOS","today_opening":1174.34,"stock_status":"Critical","location":"RACK-92"},{"sno":93,"part_no":"B109L04712","description":"THREAD ORANGE ARTICLE 02902","supplier":"THREADS (INDIA) LIMITED","category":"Other Bop","uom":"NOS","today_opening":1690.6,"stock_status":"Excess","location":"RACK-93"},{"sno":94,"part_no":"B109L04708","description":"THREAD RED ARTICLE 2902","supplier":"THREADS (INDIA) LIMITED","category":"Other Bop","uom":"NOS","today_opening":600.0,"stock_status":"OK","location":"RACK-94"},{"sno":95,"part_no":"B109L04713","description":"THREAD OFF WHITE 34310","supplier":"THREADS (INDIA) LIMITED","category":"Other Bop","uom":"NOS","today_opening":11000.0,"stock_status":"Excess","location":"RACK-95"},{"sno":96,"part_no":"B110L06931","description":"HORN LOWER SPRING(BLACK) -QY(KIA)","supplier":"GANDHI SPRINGS PVT. LTD.","category":"Other Bop","uom":"NOS","today_opening":3150.0,"stock_status":"Reorder","location":"RACK-96"},{"sno":97,"part_no":"B110L06932","description":"HORN UPPER SPRING (WHITE)-QY(KIA)","supplier":"GANDHI SPRINGS PVT. LTD.","category":"Other Bop","uom":"NOS","today_opening":1990.0,"stock_status":"Critical","location":"RACK-97"},{"sno":98,"part_no":"B101L07637","description":"STEERING WHEEL DAMPER YL1.","supplier":"WOCO TECH ELASTOMERE NOIDA LIMITED","category":"Other Bop","uom":"NOS","today_opening":255.0,"stock_status":"Critical","location":"RACK-98"},{"sno":99,"part_no":"B112L04618","description":"WIRE HARNESS PART-A , L=55MM","supplier":"TECHNOCRAT CONNECTIVITY SYSTEMS PVT. LTD.","category":"Other Bop","uom":"NOS","today_opening":1020.0,"stock_status":"Reorder","location":"RACK-99"},{"sno":100,"part_no":"B112L04619","description":"WIRE HARNESS PART-B L=190MM","supplier":"TECHNOCRAT CONNECTIVITY SYSTEMS PVT. LTD.","category":"Other Bop","uom":"NOS","today_opening":12000.0,"stock_status":"Critical","location":"RACK-100"},{"sno":101,"part_no":"B110L06943","description":"HORN SPRING -YG8","supplier":"GANDHI SPRINGS PVT. LTD.","category":"Other Bop","uom":"NOS","today_opening":12790.0,"stock_status":"Excess","location":"RACK-101"},{"sno":102,"part_no":"C116L01700","description":"WELDING WIRE 1.0MM","supplier":"JBS STEELS PVT. LTD.","category":"Other Bop","uom":"KG","today_opening":5000.0,"stock_status":"OK","location":"RACK-102"},{"sno":103,"part_no":"B105L2838","description":"CABLE TIE - 200X2.5MM","supplier":"MAGOO ELECTRIC CORP.","category":"Other Bop","uom":"PKT","today_opening":30000.0,"stock_status":"Excess","location":"RACK-103"},{"sno":104,"part_no":"B110L00600","description":"CANCEL PIN 3X24","supplier":"ATOP PRODUCTS PVT.LTD.","category":"Other Bop","uom":"NOS","today_opening":23.0,"stock_status":"Excess","location":"RACK-104"},{"sno":105,"part_no":"B105L2845","description":"HORN INSULATOR Y9T","supplier":"METPLAST INDUSTRIES","category":"Other Bop","uom":"NOS","today_opening":746.0,"stock_status":"Reorder","location":"RACK-105"},{"sno":106,"part_no":"B110L06945","description":"SELF TAPPING SCREW M4X14 KY FL","supplier":"NEO INDUSTRIES","category":"Other Bop","uom":"NOS","today_opening":37500.0,"stock_status":"Excess","location":"RACK-106"},{"sno":107,"part_no":"RM09L15014","description":"ARMATURE KY FL","supplier":"MAHAVIR DIE CASTERS PVT. LTD.","category":"Armature","uom":"NOS","today_opening":300.0,"stock_status":"Critical","location":"RACK-107"},{"sno":108,"part_no":"B112L04623","description":"WIRING HARNESS KY FL 56190-DY500","supplier":"DS CONNECTORS AND CABLES INDIA PRIVATE LIMITED","category":"Wiring Harness","uom":"NOS","today_opening":8000.0,"stock_status":"Critical","location":"RACK-108"},{"sno":109,"part_no":"B112L04624","description":"WIRING HARNESS KY FL 56190-DY600","supplier":"DS CONNECTORS AND CABLES INDIA PRIVATE LIMITED","category":"Wiring Harness","uom":"NOS","today_opening":2540.0,"stock_status":"Critical","location":"RACK-109"},{"sno":110,"part_no":"B112L04625","description":"WIRING HARNESS KY FL 56190-DY700","supplier":"DS CONNECTORS AND CABLES INDIA PRIVATE LIMITED","category":"Wiring Harness","uom":"NOS","today_opening":416.0,"stock_status":"OK","location":"RACK-110"},{"sno":111,"part_no":"B112L04626","description":"WIRING HARNESS KY FL 56190-DY800","supplier":"DS CONNECTORS AND CABLES INDIA PRIVATE LIMITED","category":"Wiring Harness","uom":"NOS","today_opening":360.0,"stock_status":"Critical","location":"RACK-111"},{"sno":112,"part_no":"RM02L00700","description":"STEEL BAR DIA 8MM","supplier":"C.LAL BRIGHT STEELS (P) LTD.","category":"Steel Bar","uom":"KG","today_opening":26.0,"stock_status":"Excess","location":"RACK-112"},{"sno":113,"part_no":"RM09L15015","description":"SPLIT VEKTOR 520 BLACK","supplier":"MASTROTTO INDONESIA, PT","category":"Import","uom":"SQM","today_opening":12000.0,"stock_status":"Excess","location":"RACK-113"},{"sno":114,"part_no":"B110L06944","description":"SCREW M4X8 FORGED WASHER","supplier":"TKW FASTENERS P. LTD.","category":"Other Bop","uom":"NOS","today_opening":600.0,"stock_status":"OK","location":"RACK-114"},{"sno":115,"part_no":"B110L06946","description":"SPRING COMPRESSED MODEL K","supplier":"KRISHNA SPRINGS","category":"Other Bop","uom":"NOS","today_opening":144.0,"stock_status":"Reorder","location":"RACK-115"},{"sno":116,"part_no":"B102L01745","description":"SPOKE A (LEFT) W-201","supplier":"TRW SUN STEERING WHEELS PUNE","category":"Other Bop","uom":"NOS","today_opening":4000.0,"stock_status":"Critical","location":"RACK-116"},{"sno":117,"part_no":"B102L01746","description":"SPOKE A (RIGHT) W-201","supplier":"TRW SUN STEERING WHEELS PUNE","category":"Other Bop","uom":"NOS","today_opening":38.0,"stock_status":"Excess","location":"RACK-117"},{"sno":118,"part_no":"B102L01747","description":"BOSS PLATE -W-201 TC1","supplier":"TRW SUN STEERING WHEELS PUNE","category":"Other Bop","uom":"NOS","today_opening":5750.0,"stock_status":"Critical","location":"RACK-118"},{"sno":119,"part_no":"B102L01751","description":"SPOKE B W201 TC1 LEFT","supplier":"METPLAST INDUSTRIES","category":"Other Bop","uom":"NOS","today_opening":139.0,"stock_status":"Critical","location":"RACK-119"},{"sno":120,"part_no":"B102L01752","description":"SPOKE B W201 TC1 - RIGHT","supplier":"METPLAST INDUSTRIES","category":"Other Bop","uom":"NOS","today_opening":1168.4,"stock_status":"Excess","location":"RACK-120"},{"sno":121,"part_no":"B102L01753","description":"FINISH BOSS YG8","supplier":"HI-TECH INDUSTRIES","category":"Other Bop","uom":"NOS","today_opening":2.0,"stock_status":"Critical","location":"RACK-121"},{"sno":122,"part_no":"B105L2918","description":"SWITCH ASSY. KY FL 96700-DY600 WK","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Other Bop","uom":"NOS","today_opening":799.0,"stock_status":"Critical","location":"RACK-122"},{"sno":123,"part_no":"B105L2921","description":"SWITCH ASSY. KY FL 96700-DY900 WK","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Other Bop","uom":"NOS","today_opening":186.0,"stock_status":"Excess","location":"RACK-123"},{"sno":124,"part_no":"B105L2924","description":"SWITCH ASSY. KY EV 96770-XG500QA1","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Other Bop","uom":"NOS","today_opening":1401.0,"stock_status":"Excess","location":"RACK-124"},{"sno":125,"part_no":"B105L2925","description":"SWITCH ASSY. KY EV 96780-XG500QA1","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Other Bop","uom":"NOS","today_opening":336.0,"stock_status":"Excess","location":"RACK-125"},{"sno":126,"part_no":"B105L2926","description":"SWITCH ASSY. KY EV 96700-XY110 N2V","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Other Bop","uom":"NOS","today_opening":42.0,"stock_status":"OK","location":"RACK-126"},{"sno":127,"part_no":"B105L2927","description":"SWITCH ASSY. KY EV 96700-XY120 N2V","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Other Bop","uom":"NOS","today_opening":20.0,"stock_status":"OK","location":"RACK-127"},{"sno":131,"part_no":"B105L2866","description":"SWITCH ASSY QY 96700-CC330 FHV","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Switch","uom":"NOS","today_opening":600.0,"stock_status":"Critical","location":"RACK-131"},{"sno":140,"part_no":"B105L02872","description":"SWITCH ASSY - AUDIO TYPE-A","supplier":"JAY USHIN LIMITED","category":"Switch","uom":"NOS","today_opening":24.0,"stock_status":"OK","location":"RACK-140"},{"sno":145,"part_no":"RM09I00301","description":"PERFORATED LEATHER (XBA)-BLACK","supplier":"Q Leather","category":"Import","uom":"SQ.MTR","today_opening":9000.0,"stock_status":"Excess","location":"RACK-145"},{"sno":146,"part_no":"RM05I04102","description":"SONET EMBLEM ASSY.","supplier":"HANKOOK NATIONAL CO., LTD.","category":"Import","uom":"NOS","today_opening":1300.0,"stock_status":"OK","location":"RACK-146"},{"sno":147,"part_no":"RM05I04101","description":"D-CUT EMBLEM, GT LINE","supplier":"HANKOOK NATIONAL CO., LTD.","category":"Import","uom":"NOS","today_opening":1200.0,"stock_status":"OK","location":"RACK-147"},{"sno":153,"part_no":"RI0607MAT007","description":"R248 MICA PIANO BLACK","supplier":"AKZONOBEL INDIA PVT LTD","category":"Chemical","uom":"LTR","today_opening":96.0,"stock_status":"OK","location":"RACK-153"},{"sno":160,"part_no":"B102L01759","description":"FINISH BOSS U-201","supplier":"HI-TECH INDUSTRIES","category":"Boss","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-160"},{"sno":161,"part_no":"B102L01113","description":"BOSS F - YR9","supplier":"HI-TECH INDUSTRIES","category":"Boss","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-161"},{"sno":162,"part_no":"B102L00607","description":"BOSS S 380C TATA","supplier":"HI-TECH INDUSTRIES","category":"Boss","uom":"NOS","today_opening":1590.0,"stock_status":"Excess","location":"RACK-162"},{"sno":163,"part_no":"B102L00201","description":"BOSS S 800CC/YE2","supplier":"HI-TECH INDUSTRIES","category":"Boss","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-163"},{"sno":164,"part_no":"B102L00301","description":"BOSS S M-K","supplier":"HI-TECH INDUSTRIES","category":"Boss","uom":"NOS","today_opening":1125.0,"stock_status":"Excess","location":"RACK-164"},{"sno":165,"part_no":"B102L01711","description":"FINISH BOSS MODEL B","supplier":"HI-TECH INDUSTRIES","category":"Boss","uom":"NOS","today_opening":173.56,"stock_status":"OK","location":"RACK-165"},{"sno":167,"part_no":"B102L01720","description":"BOSS S-OMNI","supplier":"HI-TECH INDUSTRIES","category":"Boss","uom":"NOS","today_opening":1709.0,"stock_status":"Excess","location":"RACK-167"},{"sno":169,"part_no":"RM04L1000","description":"BRASS SHEET 77X886X0.8 MM","supplier":"AGRAWAL METAL WORKS","category":"Sheet","uom":"KG","today_opening":14.0,"stock_status":"Excess","location":"RACK-169"},{"sno":171,"part_no":"RM01L01500","description":"STEEL STRIP- 8 X 0.6 MM (COIL)","supplier":"STEEL CORPORATION","category":"Steel Strip","uom":"KG","today_opening":19.0,"stock_status":"Excess","location":"RACK-171"},{"sno":182,"part_no":"RM01L47057","description":"CRC SHEET 1250X75X2.5MM","supplier":"HERO STEELS LIMITED","category":"Steel Strip","uom":"KG","today_opening":2267.0,"stock_status":"Excess","location":"RACK-182"},{"sno":189,"part_no":"RM01L01800","description":"C.R.C.A. STRIP-D 925x187x4mm","supplier":"HERO STEELS LIMITED","category":"Steel Strip","uom":"KG","today_opening":367.4,"stock_status":"Excess","location":"RACK-189"},{"sno":190,"part_no":"RM01L01807","description":"CRCA STRIP-D 1180X148X1.2 MM","supplier":"HERO STEELS LIMITED","category":"Steel Strip","uom":"KG","today_opening":150.0,"stock_status":"Excess","location":"RACK-190"},{"sno":213,"part_no":"RM02L01500","description":"STEEL BAR DIA 9MM","supplier":"LAXMI MAHIMA METAL ALLOY (P) LTD.","category":"Steel Bar","uom":"KG","today_opening":0.0,"stock_status":"Critical","location":"RACK-213"},{"sno":216,"part_no":"RM02L00900","description":"STEEL BAR DIA 9.5MM","supplier":"LAXMI MAHIMA METAL ALLOY (P) LTD.","category":"Steel Bar","uom":"KG","today_opening":275.0,"stock_status":"Excess","location":"RACK-216"},{"sno":218,"part_no":"B105L02880","description":"GARNISH C YL1 NON PAINTED","supplier":"SPECULUM PLAST PVT. LTD.","category":"Garnish","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-218"},{"sno":219,"part_no":"B105L02878","description":"GARNISH L YL1 NON PLATED","supplier":"SPECULUM PLAST PVT. LTD.","category":"Garnish","uom":"NOS","today_opening":125.0,"stock_status":"Excess","location":"RACK-219"},{"sno":220,"part_no":"B105L02879","description":"GARNISH R YL1 NON PLATED","supplier":"SPECULUM PLAST PVT. LTD.","category":"Garnish","uom":"NOS","today_opening":59.7,"stock_status":"Excess","location":"RACK-220"},{"sno":277,"part_no":"RM09L01800","description":"SWITCH BASE XENON 380 DIA BLACK","supplier":"METPLAST INDUSTRIES","category":"Other Bop","uom":"NOS","today_opening":12000.0,"stock_status":"Excess","location":"RACK-277"},{"sno":278,"part_no":"B105L00901","description":"RETAINNER M-K","supplier":"METPLAST INDUSTRIES","category":"Other Bop","uom":"NOS","today_opening":26350.0,"stock_status":"Excess","location":"RACK-278"},{"sno":280,"part_no":"B112L01900","description":"COUPLER PHEONIX (NYLON 66)","supplier":"ULTRA WIRING","category":"Other Bop","uom":"NOS","today_opening":4000.0,"stock_status":"OK","location":"RACK-280"},{"sno":286,"part_no":"PM15L00800","description":"CORR BOX GM NEW 470X410X450MM QY","supplier":"TOSHIMA PACKAGING PVT. LTD.","category":"Packing Material","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-286"},{"sno":294,"part_no":"PM15L99068","description":"ANGLE BOARD 75X75X5 M L 1080 MM","supplier":"SHRI SHYAM POLYMER INDUSTRIES","category":"Packing Material","uom":"NOS","today_opening":2000.0,"stock_status":"OK","location":"RACK-294"},{"sno":295,"part_no":"PM15L99129","description":"EP+BUBBLE BAG LAMINATED 18X20","supplier":"SHRI SHYAM POLYMER INDUSTRIES","category":"Packing Material","uom":"NOS","today_opening":1000.0,"stock_status":"Excess","location":"RACK-295"},{"sno":300,"part_no":"PM15L99127","description":"WOODEN PALLET SIZE: 1230X940X130 MM","supplier":"AXIS PACKAGING INDUSTRIES","category":"Packing Material","uom":"NOS","today_opening":256.0,"stock_status":"Excess","location":"RACK-300"},{"sno":308,"part_no":"PM15L99073","description":"HONEY COMB PALLET 1200x800x130 MM","supplier":"PACKRAFT CONTAINER INDIA PVT LTD.","category":"Packing Material","uom":"NOS","today_opening":6000.0,"stock_status":"Excess","location":"RACK-308"},{"sno":309,"part_no":"PM15L99076","description":"EP SHEET 60X80X25 MM FOAM GUTKA","supplier":"MANGLAM SAFPACK INDUSTRIES","category":"Packing Material","uom":"NOS","today_opening":5000.0,"stock_status":"OK","location":"RACK-309"},{"sno":310,"part_no":"PM15L99079","description":"CORNER 100X100X141X490 MM","supplier":"TOSHIMA PACKAGING PVT. LTD.","category":"Packing Material","uom":"NOS","today_opening":217.2,"stock_status":"Excess","location":"RACK-310"},{"sno":320,"part_no":"PM15L99043","description":"M.G.P BOX 265X195X65 MM 3 PLY","supplier":"JAI MAA LAXMI FABRICATION","category":"Packing Material","uom":"NOS","today_opening":650.0,"stock_status":"OK","location":"RACK-320"},{"sno":324,"part_no":"PM15L99128","description":"BOX 410X130X410 STEERING WHEEL","supplier":"JAI MAA LAXMI FABRICATION","category":"Packing Material","uom":"NOS","today_opening":82.0,"stock_status":"OK","location":"RACK-324"},{"sno":327,"part_no":"PM15L99078","description":"CORRUGRATED BOX 400X400X500 MM","supplier":"TOSHIMA PACKAGING PVT. LTD.","category":"Packing Material","uom":"NOS","today_opening":97.5,"stock_status":"OK","location":"RACK-327"},{"sno":328,"part_no":"PM15L99130","description":"WOODEN PALTE 48X36","supplier":"TRW SUN STEERING WHEELS PVT LTD","category":"Packing Material","uom":"NOS","today_opening":91.0,"stock_status":"OK","location":"RACK-328"},{"sno":352,"part_no":"J112L4043","description":"HORN PLATE QY 5/5","supplier":"BHARTI METAL FINISHERS PVT. LTD.","category":"Job Work Material","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-352"},{"sno":353,"part_no":"J112L4050","description":"SPOKE 3 O CLOCK -QY(KIA)","supplier":"R.K. INDUSTRIES","category":"Job Work Material","uom":"NOS","today_opening":0.0,"stock_status":"Critical","location":"RACK-353"},{"sno":367,"part_no":"J112L03953","description":"DAMPER PLATE Y9T PLATED","supplier":"BHARTI METAL FINISHERS PVT. LTD.","category":"Job Work Material","uom":"NOS","today_opening":12908.0,"stock_status":"Excess","location":"RACK-367"},{"sno":381,"part_no":"B105L2928","description":"SWITCH ASSY. KY EV 96700-XY110WK","supplier":"MOBASE ELECTRONICS INDIA PVT LTD","category":"Other Bop","uom":"NOS","today_opening":494.0,"stock_status":"OK","location":"RACK-381"},{"sno":382,"part_no":"B101L07662","description":"HORN PLATE QY KIA PS","supplier":"Metal Dyne","category":"Other Bop","uom":"NOS","today_opening":7200.0,"stock_status":"Excess","location":"RACK-382"},{"sno":383,"part_no":"B101L07669","description":"HORN PLATE KYFL","supplier":"Metal Dyne","category":"Other Bop","uom":"NOS","today_opening":2267.0,"stock_status":"Excess","location":"RACK-383"},{"sno":384,"part_no":"B102L01759","description":"FINISH BOSS U-201 (active)","supplier":"HI-TECH INDUSTRIES","category":"Other Bop","uom":"NOS","today_opening":2155.0,"stock_status":"Excess","location":"RACK-384"},{"sno":386,"part_no":"B101L07666","description":"SPOKE B Y9T","supplier":"Metal Dyne","category":"Other Bop","uom":"NOS","today_opening":7100.0,"stock_status":"Excess","location":"RACK-386"},{"sno":387,"part_no":"J112L4068","description":"SLIP RING Y9T BENDING","supplier":"Metal Dyne","category":"Other Bop","uom":"NOS","today_opening":1100.0,"stock_status":"OK","location":"RACK-387"},{"sno":388,"part_no":"B101L07663","description":"BOSS PLATE Y9T","supplier":"Metal Dyne","category":"Other Bop","uom":"NOS","today_opening":358.0,"stock_status":"Critical","location":"RACK-388"},{"sno":389,"part_no":"B101L07664","description":"SPOKE A Y9T LEFT","supplier":"Metal Dyne","category":"Other Bop","uom":"NOS","today_opening":600.0,"stock_status":"Reorder","location":"RACK-389"},{"sno":391,"part_no":"B101L07667","description":"DAMPER PLATE Y9T","supplier":"Metal Dyne","category":"Other Bop","uom":"NOS","today_opening":1622.0,"stock_status":"Excess","location":"RACK-391"},{"sno":392,"part_no":"B101L07668","description":"SLIP RING Y9T","supplier":"Metal Dyne","category":"Other Bop","uom":"NOS","today_opening":4050.0,"stock_status":"Excess","location":"RACK-392"},{"sno":393,"part_no":"B102L01761","description":"BEND ROD YG8","supplier":"Metal Dyne","category":"Other Bop","uom":"NOS","today_opening":6000.0,"stock_status":"Critical","location":"RACK-393"}];
+
+// ═══════════════ DATETIME ═══════════════
+function updateClock(){
+  const now = new Date();
+  const d = now.toLocaleDateString('en-IN',{weekday:'short',day:'2-digit',month:'short',year:'numeric'});
+  const t = now.toLocaleTimeString('en-IN');
+  document.getElementById('datetime').innerHTML = d+'<br>'+t;
+}
+setInterval(updateClock,1000); updateClock();
+
+// ═══════════════ THEME ═══════════════
+function toggleTheme(){
+  document.body.classList.toggle('light');
+  document.querySelector('.theme-btn:not(#autoBtn):not([onclick*="uploadFile"])').textContent = document.body.classList.contains('light') ? '🌙 Dark' : '☀️ Light';
+}
+
+// ═══════════════ AUTO SLIDE ═══════════════
+const SLIDE_IDS = ['slide-kpi','slide-heatmap','slide-sunburst','slide-geo','slide-risk','slide-reorder','slide-deadstock','slide-tree','slide-tv'];
+let autoSlideTimer = null, autoBarTimer = null, autoActive = false, currentSlideIdx = 0;
+const AUTO_INTERVAL = 20000;
+
+function toggleAutoSlide(){
+  autoActive = !autoActive;
+  const btn = document.getElementById('autoBtn');
+  const bar = document.getElementById('autoProgress');
+  if(autoActive){
+    btn.textContent='⏸ Pause (20s)';
+    btn.style.background='rgba(248,81,73,.2)';
+    btn.style.color='#f85149';
+    btn.style.borderColor='#f85149';
+    bar.style.display='block';
+    startAutoSlide();
+  } else {
+    btn.textContent='▶ Auto (20s)';
+    btn.style.background='rgba(63,185,80,.2)';
+    btn.style.color='#3fb950';
+    btn.style.borderColor='#3fb950';
+    bar.style.display='none';
+    clearTimeout(autoSlideTimer);
+    clearInterval(autoBarTimer);
+    document.getElementById('autoBar').style.width='0%';
+  }
+}
+
+function startAutoSlide(){
+  if(!autoActive) return;
+  const barEl = document.getElementById('autoBar');
+  barEl.style.transition='none'; barEl.style.width='0%';
+  setTimeout(()=>{ barEl.style.transition=`width ${AUTO_INTERVAL}ms linear`; barEl.style.width='100%'; },50);
+  autoSlideTimer = setTimeout(()=>{
+    currentSlideIdx = (currentSlideIdx+1) % SLIDE_IDS.length;
+    const targetSlide = SLIDE_IDS[currentSlideIdx];
+    const tabs = document.querySelectorAll('.tab-btn');
+    showSlide(targetSlide, tabs[currentSlideIdx]);
+    startAutoSlide();
+  }, AUTO_INTERVAL);
+}
+
+// ═══════════════ SLIDE NAV ═══════════════
+function showSlide(id, btn){
+  document.querySelectorAll('.slide').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(btn) btn.classList.add('active');
+  // track index for auto-slide
+  currentSlideIdx = SLIDE_IDS.indexOf(id);
+  if(id==='slide-heatmap') renderHeatmap();
+  if(id==='slide-sunburst') renderSunburst();
+  if(id==='slide-risk') renderRisk();
+  if(id==='slide-reorder') renderReorder();
+  if(id==='slide-deadstock') renderDeadstock();
+  if(id==='slide-tree') renderTree();
+  if(id==='slide-tv') renderTV();
+  if(id==='slide-geo') renderGeo();
+  // restart progress bar on manual click
+  if(autoActive){ clearTimeout(autoSlideTimer); clearInterval(autoBarTimer); startAutoSlide(); }
+}
+
+// ═══════════════ FILE UPLOAD ═══════════════
+function handleUpload(input){
+  const file = input.files[0]; if(!file) return;
+  const bar = document.getElementById('uploadBar');
+  const status = document.getElementById('uploadStatus');
+  bar.style.display='flex';
+  status.textContent=`📂 Processing: ${file.name} (${(file.size/1024).toFixed(1)} KB)...`;
+
+  const reader = new FileReader();
+  if(file.name.endsWith('.json')){
+    reader.onload = (e)=>{
+      try{
+        const parsed = JSON.parse(e.target.result);
+        const updated = applyUploadedData(parsed);
+        status.textContent = `✅ Updated ${updated} items from ${file.name} — Dashboard refreshed!`;
+        refreshAllSlides();
+      } catch(err){ status.textContent = `❌ Error parsing JSON: ${err.message}`; }
+    };
+    reader.readAsText(file);
+  } else if(file.name.endsWith('.csv')){
+    reader.onload = (e)=>{
+      try{
+        const rows = parseCSV(e.target.result);
+        const updated = applyUploadedData(rows);
+        status.textContent = `✅ Updated ${updated} items from CSV — Dashboard refreshed!`;
+        refreshAllSlides();
+      } catch(err){ status.textContent = `❌ Error parsing CSV: ${err.message}`; }
+    };
+    reader.readAsText(file);
+  } else if(file.name.endsWith('.xlsx')){
+    status.textContent = `⚠️ XLSX detected: ${file.name} — For full XLSX support, export as CSV or JSON first. Showing last loaded data.`;
+  } else {
+    status.textContent = `❌ Unsupported format. Please upload .json or .csv`;
+  }
+  input.value='';
+}
+
+function parseCSV(text){
+  const lines = text.trim().split('\n');
+  const headers = lines[0].split(',').map(h=>h.trim().replace(/^"|"$/g,''));
+  return lines.slice(1).map(line=>{
+    const vals = line.split(',').map(v=>v.trim().replace(/^"|"$/g,''));
+    const obj={};
+    headers.forEach((h,i)=>{ obj[h]=isNaN(vals[i])?vals[i]:parseFloat(vals[i])||0; });
+    return obj;
+  });
+}
+
+function applyUploadedData(rows){
+  let updated=0;
+  rows.forEach(row=>{
+    const partNo = row['part_no']||row['PART NO.']||row['PartNo'];
+    if(!partNo) return;
+    // Update DATA array
+    const idx = DATA.findIndex(d=>d.part_no===String(partNo).trim());
+    if(idx>=0){
+      const newStock = parseFloat(row['today_opening']||row['TODAY OPENING']||row['stock']||DATA[idx].today_opening);
+      const newStatus = row['stock_status']||row['STATUS.1']||row['status']||DATA[idx].stock_status;
+      DATA[idx].today_opening = newStock;
+      DATA[idx].stock_status = String(newStatus).trim();
+      updated++;
+    }
+    // Update ALL_DATA too
+    const idx2 = ALL_DATA.findIndex(d=>d.part_no===String(partNo).trim());
+    if(idx2>=0){
+      ALL_DATA[idx2].today_opening = parseFloat(row['today_opening']||row['TODAY OPENING']||ALL_DATA[idx2].today_opening);
+      ALL_DATA[idx2].stock_status = String(row['stock_status']||row['STATUS.1']||ALL_DATA[idx2].stock_status).trim();
+    }
+  });
+  return updated;
+}
+
+function refreshAllSlides(){
+  renderCriticalTable(); renderSuppBreakdown(); renderCatBreakdown();
+  const active = document.querySelector('.slide.active');
+  if(active){
+    const id=active.id;
+    if(id==='slide-heatmap') renderHeatmap();
+    if(id==='slide-sunburst') renderSunburst();
+    if(id==='slide-risk') renderRisk();
+    if(id==='slide-reorder') renderReorder();
+    if(id==='slide-deadstock') renderDeadstock();
+    if(id==='slide-tree') renderTree();
+    if(id==='slide-tv') renderTV();
+  }
+}
+
+// ═══════════════ KPI SPARKLINES ═══════════════
+function drawSparkline(id, vals, color){
+  const svg = document.getElementById(id); if(!svg) return;
+  const w=svg.parentElement.offsetWidth-32||120, h=32;
+  svg.setAttribute('viewBox',`0 0 ${w} ${h}`);
+  const min=Math.min(...vals), max=Math.max(...vals);
+  const pts = vals.map((v,i)=>{
+    const x=(i/(vals.length-1))*(w-4)+2;
+    const y=max===min?h/2:h-((v-min)/(max-min))*(h-4)-2;
+    return `${x},${y}`;
+  }).join(' ');
+  svg.innerHTML=`<polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round"/>`;
+}
+// Simulated trend data
+drawSparkline('sp-total',[380,382,385,388,390,391,393],'#58a6ff');
+drawSparkline('sp-critical',[210,215,218,220,222,221,222],'#f85149');
+drawSparkline('sp-ok',[68,65,63,61,60,62,61],'#3fb950');
+drawSparkline('sp-reorder',[18,19,20,20,21,20,20],'#d29922');
+drawSparkline('sp-excess',[88,89,90,91,90,89,90],'#a371f7');
+
+// ═══════════════ CATEGORY BREAKDOWN ═══════════════
+const catData = {
+  "Other Bop":131,"Packing Material":66,"Switch":37,"Steel Strip":32,
+  "Chemical":31,"Job Work Material":17,"Import":16,"PP":15,"Wiring Harness":11,
+  "Boss":9,"Steel Bar":7,"Thread":5,"Armature":5,"Garnish":3,"Sheet":3,
+  "Steel Tube":3,"LEATHER":2
+};
+const catColors = ['#58a6ff','#3fb950','#f85149','#d29922','#a371f7','#f0883e',
+  '#39d353','#79c0ff','#ffa657','#ff7b72','#d2a8ff','#7ee787',
+  '#ffa198','#aff5b4','#ffb77a','#a8daff','#ffd700'];
+function renderCatBreakdown(){
+  const div = document.getElementById('catBreakdown');
+  const total = Object.values(catData).reduce((a,b)=>a+b,0);
+  div.innerHTML = Object.entries(catData).sort((a,b)=>b[1]-a[1]).slice(0,10).map((([k,v],i)=>{
+    const pct = (v/total*100).toFixed(1);
+    return `<div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
+        <span style="color:var(--text)">${k}</span><span style="color:${catColors[i]}">${v} (${pct}%)</span>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%;background:${catColors[i]}"></div></div>
+    </div>`;
+  })).join('');
+}
+renderCatBreakdown();
+
+// Supplier breakdown
+const suppData = {"MOBASE ELECTRONICS INDIA PVT LTD":34,"HERO STEELS LIMITED":29,"TKW FASTENERS P. LTD.":22,"JAI MAA LAXMI FABRICATION":22,"HI-TECH INDUSTRIES":17,"TOSHIMA PACKAGING PVT. LTD.":15,"Metal Dyne":12,"DS CONNECTORS AND CABLES INDIA PRIVATE LIMITED":11,"SUN VACUUM FORMERS PVT. LTD.":11,"THREADS (INDIA) LIMITED":11};
+function renderSuppBreakdown(){
+  const div = document.getElementById('supplierBreakdown');
+  const total = Object.values(suppData).reduce((a,b)=>a+b,0);
+  div.innerHTML = Object.entries(suppData).map(([k,v],i)=>{
+    const pct=(v/total*100).toFixed(1);
+    return `<div style="margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px">
+        <span style="color:var(--text);max-width:68%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${k}">${k}</span>
+        <span style="color:${catColors[i]}">${v}</span>
+      </div>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:${(v/34*100).toFixed(0)}%;background:${catColors[i]}"></div></div>
+    </div>`;
+  }).join('');
+}
+renderSuppBreakdown();
+
+// Critical table in KPI slide
+function renderCriticalTable(){
+  const critItems = DATA.filter(d=>d.stock_status==='Critical').slice(0,12);
+  const div = document.getElementById('criticalTable');
+  div.innerHTML = `<div class="reorder-table-wrap"><table>
+    <thead><tr><th>Part No</th><th>Description</th><th>Supplier</th><th>Category</th><th>UOM</th><th>Stock</th><th>Min Level</th><th>Location</th></tr></thead>
+    <tbody>${critItems.map(d=>`
+      <tr>
+        <td style="color:var(--blue);font-weight:700">${d.part_no}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.description}</td>
+        <td style="font-size:11px;color:var(--text2)">${d.supplier}</td>
+        <td><span class="status-badge" style="background:rgba(88,166,255,.15);color:var(--blue);border:1px solid var(--blue)">${d.category}</span></td>
+        <td>${d.uom}</td>
+        <td style="color:var(--critical);font-weight:700">${d.today_opening.toLocaleString()}</td>
+        <td style="color:var(--text2)">${d.min_level.toLocaleString()}</td>
+        <td style="color:var(--text2)">${d.location}</td>
+      </tr>`).join('')}
+    </tbody></table></div>`;
+}
+renderCriticalTable();
+
+// ═══════════════ HEAT MAP ═══════════════
+const allCats = [...new Set(DATA.map(d=>d.category))].sort();
+allCats.forEach(c=>{
+  ['hmCat','roCat'].forEach(id=>{
+    const sel=document.getElementById(id); if(sel){
+      const o=document.createElement('option'); o.value=c; o.text=c; sel.appendChild(o);
+    }
+  });
+});
+
+function renderHeatmap(){
+  const q=(document.getElementById('hmSearch')||{value:''}).value.toLowerCase();
+  const cat=(document.getElementById('hmCat')||{value:''}).value;
+  const st=(document.getElementById('hmStatus')||{value:''}).value;
+  const filtered = DATA.filter(d=>
+    (!q||(d.part_no+d.description).toLowerCase().includes(q)) &&
+    (!cat||d.category===cat) &&
+    (!st||d.stock_status===st)
+  );
+  const grid = document.getElementById('heatmapGrid');
+  grid.innerHTML = filtered.map(d=>`
+    <div class="hm-cell ${d.stock_status}" onclick="showTooltipModal(event,${JSON.stringify(d).replace(/"/g,'&quot;')})">
+      <div class="hm-pno">${d.part_no}</div>
+      <div class="hm-name">${d.description}</div>
+      <div class="hm-qty">${d.today_opening.toLocaleString()}</div>
+      <div class="hm-status-tag">${d.stock_status}</div>
+    </div>`).join('');
+}
+renderHeatmap();
+
+// ═══════════════ SUNBURST ═══════════════
+function renderSunburst(){
+  const svg = document.getElementById('sunburstSvg');
+  const cx=260, cy=260, r1=80, r2=160, r3=210;
+  const catStatus = {};
+  DATA.forEach(d=>{
+    if(!catStatus[d.category]) catStatus[d.category]={Critical:0,OK:0,Reorder:0,Excess:0,total:0};
+    catStatus[d.category][d.stock_status]=(catStatus[d.category][d.stock_status]||0)+1;
+    catStatus[d.category].total++;
+  });
+  const cats = Object.entries(catStatus).sort((a,b)=>b[1].total-a[1].total);
+  const total = cats.reduce((s,[,v])=>s+v.total,0);
+  let paths=''; let startAngle=-Math.PI/2;
+  const statusColors = {Critical:'#f85149',OK:'#3fb950',Reorder:'#d29922',Excess:'#a371f7'};
+
+  cats.forEach(([cat,stat],ci)=>{
+    const catAngle = (stat.total/total)*2*Math.PI;
+    const col = catColors[ci%catColors.length];
+    // Outer ring (category)
+    const x1=cx+r1*Math.cos(startAngle), y1=cy+r1*Math.sin(startAngle);
+    const x2=cx+r2*Math.cos(startAngle+catAngle), y2=cy+r2*Math.sin(startAngle+catAngle);
+    const x3=cx+r1*Math.cos(startAngle+catAngle), y3=cy+r1*Math.sin(startAngle+catAngle);
+    const lg=catAngle>Math.PI?1:0;
+    paths+=`<path d="M${cx+r1*Math.cos(startAngle)},${cy+r1*Math.sin(startAngle)} A${r1},${r1} 0 ${lg},1 ${x3},${y3} L${x2},${y2} A${r2},${r2} 0 ${lg},0 ${x1},${y1} Z" fill="${col}" opacity=".85" stroke="var(--bg)" stroke-width="1.5">
+      <title>${cat}: ${stat.total} items</title></path>`;
+    // Label
+    const midA = startAngle+catAngle/2;
+    const lx=cx+(r1+r2)/2*Math.cos(midA), ly=cy+(r1+r2)/2*Math.sin(midA);
+    if(catAngle>0.15) paths+=`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" font-size="9" fill="#fff" font-weight="700">${cat.length>8?cat.slice(0,8)+'..':cat}</text>`;
+    // Inner status segments
+    let sa2=startAngle;
+    ['Critical','OK','Reorder','Excess'].forEach(st=>{
+      const cnt=stat[st]||0; if(!cnt) return;
+      const a2=(cnt/stat.total)*catAngle;
+      const r3a=r1-8, r3b=r1-2;
+      paths+=`<path d="M${cx+r3a*Math.cos(sa2)},${cy+r3a*Math.sin(sa2)} A${r3a},${r3a} 0 ${a2>Math.PI?1:0},1 ${cx+r3a*Math.cos(sa2+a2)},${cy+r3a*Math.sin(sa2+a2)} L${cx+r3b*Math.cos(sa2+a2)},${cy+r3b*Math.sin(sa2+a2)} A${r3b},${r3b} 0 ${a2>Math.PI?1:0},0 ${cx+r3b*Math.cos(sa2)},${cy+r3b*Math.sin(sa2)} Z" fill="${statusColors[st]}"/>`;
+      sa2+=a2;
+    });
+    startAngle+=catAngle;
+  });
+  // Center
+  paths+=`<circle cx="${cx}" cy="${cy}" r="60" fill="var(--bg2)"/>
+    <text x="${cx}" y="${cy-10}" text-anchor="middle" font-size="13" font-weight="800" fill="var(--text)">393</text>
+    <text x="${cx}" y="${cy+8}" text-anchor="middle" font-size="9" fill="var(--text2)">Total Items</text>`;
+  svg.innerHTML=paths;
+  // Legend
+  const leg=document.getElementById('sunburstLegend');
+  leg.innerHTML=cats.slice(0,8).map(([c,s],i)=>
+    `<div style="display:flex;align-items:center;gap:6px;font-size:11px">
+      <div style="width:10px;height:10px;border-radius:2px;background:${catColors[i]}"></div>${c} (${s.total})</div>`
+  ).join('');
+  // Cat status detail
+  const det=document.getElementById('catStatusDetail');
+  det.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px">
+    ${cats.map(([c,s],i)=>`
+      <div style="background:var(--bg3);border-radius:8px;padding:12px;border-left:3px solid ${catColors[i]}">
+        <div style="font-size:12px;font-weight:700;margin-bottom:6px">${c}</div>
+        <div style="font-size:10px;color:var(--text2)">Total: ${s.total} &nbsp;
+          <span style="color:var(--critical)">Crit: ${s.Critical||0}</span> &nbsp;
+          <span style="color:var(--ok)">OK: ${s.OK||0}</span> &nbsp;
+          <span style="color:var(--reorder)">Reo: ${s.Reorder||0}</span> &nbsp;
+          <span style="color:var(--excess)">Exc: ${s.Excess||0}</span>
+        </div>
+      </div>`).join('')}
+  </div>`;
+}
+
+// ═══════════════ GEO ═══════════════
+function renderGeo(){
+  const suppCount = {};
+  DATA.forEach(d=>{ suppCount[d.supplier]=(suppCount[d.supplier]||0)+1; });
+  const div=document.getElementById('supplierList');
+  div.innerHTML=Object.entries(suppCount).sort((a,b)=>b[1]-a[1]).map(([s,c])=>
+    `<div class="geo-item"><div class="geo-name">${s}</div><div class="geo-count">${c} items</div></div>`
+  ).join('');
+}
+
+// ═══════════════ RISK MATRIX ═══════════════
+function renderRisk(){
+  const canvas=document.getElementById('riskCanvas');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth||700, H=420;
+  canvas.width=W; canvas.height=H;
+  const pad={l:60,r:20,t:30,b:50};
+  const isDark=!document.body.classList.contains('light');
+
+  ctx.fillStyle=isDark?'#161b22':'#fff';
+  ctx.fillRect(0,0,W,H);
+
+  // Background quadrants
+  const mx=(W-pad.l-pad.r)/2+pad.l, my=(H-pad.t-pad.b)/2+pad.t;
+  ctx.fillStyle='rgba(248,81,73,0.08)'; ctx.fillRect(mx,pad.t,W-mx-pad.r,my-pad.t);
+  ctx.fillStyle='rgba(210,153,34,0.08)'; ctx.fillRect(pad.l,pad.t,mx-pad.l,my-pad.t);
+  ctx.fillStyle='rgba(63,185,80,0.08)'; ctx.fillRect(pad.l,my,mx-pad.l,H-my-pad.b);
+  ctx.fillStyle='rgba(163,113,247,0.08)'; ctx.fillRect(mx,my,W-mx-pad.r,H-my-pad.b);
+
+  // Grid
+  ctx.strokeStyle=isDark?'#30363d':'#e1e4e8'; ctx.lineWidth=1;
+  for(let i=0;i<=5;i++){
+    const x=pad.l+i*(W-pad.l-pad.r)/5;
+    const y=pad.t+i*(H-pad.t-pad.b)/5;
+    ctx.beginPath(); ctx.moveTo(x,pad.t); ctx.lineTo(x,H-pad.b); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(W-pad.r,y); ctx.stroke();
+  }
+
+  // Axes labels
+  ctx.fillStyle=isDark?'#8b949e':'#656d76'; ctx.font='11px Segoe UI';
+  ctx.textAlign='center'; ctx.fillText('← Low Lead Time  |  High Lead Time →',W/2,H-10);
+  ctx.save(); ctx.translate(14,H/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('← Low Critical  |  High Critical Items →',0,0); ctx.restore();
+
+  // Quadrant labels
+  ctx.font='bold 10px Segoe UI'; ctx.fillStyle='rgba(248,81,73,0.7)';
+  ctx.textAlign='center'; ctx.fillText('HIGH RISK',mx+(W-mx-pad.r)/2,pad.t+14);
+  ctx.fillStyle='rgba(210,153,34,0.7)'; ctx.fillText('MONITOR',pad.l+(mx-pad.l)/2,pad.t+14);
+  ctx.fillStyle='rgba(63,185,80,0.7)'; ctx.fillText('LOW RISK',pad.l+(mx-pad.l)/2,H-pad.b-10);
+  ctx.fillStyle='rgba(163,113,247,0.7)'; ctx.fillText('WATCH LEAD',mx+(W-mx-pad.r)/2,H-pad.b-10);
+
+  // Supplier data
+  const suppRisk={};
+  DATA.forEach(d=>{
+    if(!suppRisk[d.supplier]) suppRisk[d.supplier]={lt:0,crit:0,cnt:0};
+    suppRisk[d.supplier].lt=Math.max(suppRisk[d.supplier].lt,d.lead_time||0);
+    if(d.stock_status==='Critical') suppRisk[d.supplier].crit++;
+    suppRisk[d.supplier].cnt++;
+  });
+  const maxLT=Math.max(...Object.values(suppRisk).map(s=>s.lt));
+  const maxCrit=Math.max(...Object.values(suppRisk).map(s=>s.crit));
+
+  Object.entries(suppRisk).slice(0,20).forEach(([name,risk],i)=>{
+    const x=pad.l+(risk.lt/maxLT)*(W-pad.l-pad.r);
+    const y=H-pad.b-(risk.crit/maxCrit)*(H-pad.t-pad.b);
+    const r=4+risk.cnt*0.8;
+    ctx.beginPath(); ctx.arc(x,y,Math.min(r,20),0,Math.PI*2);
+    ctx.fillStyle=catColors[i%catColors.length]+'cc';
+    ctx.fill();
+    ctx.strokeStyle=catColors[i%catColors.length];
+    ctx.lineWidth=1.5; ctx.stroke();
+    if(risk.crit>5||risk.lt>20){
+      ctx.fillStyle=isDark?'#e6edf3':'#1f2328';
+      ctx.font='9px Segoe UI'; ctx.textAlign='center';
+      const label=name.split(' ').slice(0,2).join(' ');
+      ctx.fillText(label,x,y-Math.min(r,20)-3);
+    }
+  });
+
+  // Legend
+  const leg=document.getElementById('riskLegend');
+  leg.innerHTML=Object.entries(suppRisk).slice(0,10).map(([n,r],i)=>
+    `<div style="font-size:10px;display:flex;align-items:center;gap:4px">
+      <div style="width:8px;height:8px;border-radius:50%;background:${catColors[i]}"></div>${n.split(' ').slice(0,3).join(' ')} (LT:${r.lt}d, Crit:${r.crit})
+    </div>`).join('');
+}
+
+// ═══════════════ REORDER QUEUE ═══════════════
+function renderReorder(){
+  const q=(document.getElementById('roSearch')||{value:''}).value.toLowerCase();
+  const st=(document.getElementById('roStatus')||{value:''}).value;
+  const cat=(document.getElementById('roCat')||{value:''}).value;
+  const items = DATA.filter(d=>
+    (st ? d.stock_status===st : ['Critical','Reorder'].includes(d.stock_status)) &&
+    (!cat||d.category===cat) &&
+    (!q||(d.part_no+d.description+d.supplier).toLowerCase().includes(q))
+  );
+  const body=document.getElementById('reorderBody');
+  body.innerHTML=items.map((d,i)=>`
+    <tr>
+      <td style="color:var(--text2)">${i+1}</td>
+      <td style="color:var(--blue);font-weight:700">${d.part_no}</td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px">${d.description}</td>
+      <td style="font-size:10px;color:var(--text2);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.supplier}</td>
+      <td><span class="status-badge" style="background:rgba(88,166,255,.15);color:var(--blue);border:1px solid var(--blue)">${d.category}</span></td>
+      <td>${d.uom}</td>
+      <td style="font-weight:700;color:${d.stock_status==='Critical'?'var(--critical)':'var(--reorder)'}">${d.today_opening.toLocaleString()}</td>
+      <td style="color:var(--text2)">${d.min_level.toLocaleString()}</td>
+      <td style="color:var(--yellow);font-weight:700">${d.reorder_level.toLocaleString()}</td>
+      <td style="color:var(--text2)">${d.lead_time}d</td>
+      <td><span class="status-badge badge-${d.stock_status}">${d.stock_status}</span></td>
+      <td><button class="po-btn" onclick="openPO(${JSON.stringify(d).replace(/"/g,'&quot;')})">📋 PO</button></td>
+    </tr>`).join('');
+}
+
+// ═══════════════ DEAD STOCK ═══════════════
+function renderDeadstock(){
+  const excess = DATA.filter(d=>d.stock_status==='Excess'||d.monthly_consp===0);
+  let totalBlocked=0, liquidTotal=0;
+  const grid=document.getElementById('deadstockGrid');
+  grid.innerHTML=excess.map(d=>{
+    const unitCost = d.monthly_consp>0 ? Math.round(50+Math.random()*200) : 50;
+    const blocked = Math.round(d.today_opening * unitCost);
+    const liquid = Math.round(blocked * 0.6);
+    totalBlocked+=blocked; liquidTotal+=liquid;
+    return `<div class="ds-item">
+      <div class="ds-pno">${d.part_no}</div>
+      <div class="ds-desc" title="${d.description}">${d.description}</div>
+      <div class="ds-supplier">🏭 ${d.supplier}</div>
+      <div class="ds-qty">Qty: ${d.today_opening.toLocaleString()} ${d.uom}</div>
+      <div class="ds-value">Est. Value: ₹${blocked.toLocaleString()}</div>
+      <div style="font-size:10px;color:var(--ok);margin-top:2px">Liquidation: ₹${liquid.toLocaleString()}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('totalBlocked').textContent=`₹${(totalBlocked/100000).toFixed(1)}L`;
+  document.getElementById('liquidValue').textContent=`₹${(liquidTotal/100000).toFixed(1)}L`;
+}
+
+// ═══════════════ COMPONENT TREE ═══════════════
+const treeCategories = {
+  "🔧 Steering Wheel Assembly": {
+    "⚡ Electrical": ["Switch","Wiring Harness","Armature"],
+    "🔩 Mechanical": ["Other Bop","Steel Strip","Steel Bar","Steel Tube","Sheet","Boss","Garnish"],
+    "🧪 Materials": ["PP","Chemical","LEATHER","Thread"],
+    "📦 Logistics": ["Packing Material","Job Work Material","Import"]
+  }
+};
+function getStatusIcon(st){
+  return st==='Critical'?'🔴':st==='OK'?'🟢':st==='Reorder'?'🟡':st==='Excess'?'🟣':'⚪';
+}
+function renderTree(){
+  const q=(document.getElementById('treeSearch')||{value:''}).value.toLowerCase();
+  const root=document.getElementById('treeRoot');
+  let html='';
+  Object.entries(treeCategories).forEach(([top,groups])=>{
+    html+=`<div class="tree-node">
+      <div class="tree-row" onclick="toggleTree(this)">
+        <span class="tree-toggle">▶</span>
+        <span class="tree-icon">🌳</span>
+        <span class="tree-label" style="font-weight:800;font-size:13px">${top}</span>
+        <span class="tree-badge" style="background:rgba(88,166,255,.2);color:var(--blue)">${DATA.length} items</span>
+      </div>
+      <div class="tree-children" style="display:none">`;
+    Object.entries(groups).forEach(([grp,cats])=>{
+      const grpItems=DATA.filter(d=>cats.includes(d.category));
+      const critCnt=grpItems.filter(d=>d.stock_status==='Critical'||d.stock_status==='Reorder').length;
+      html+=`<div class="tree-node">
+        <div class="tree-row" onclick="toggleTree(this)">
+          <span class="tree-toggle">▶</span><span class="tree-icon">${grp.split(' ')[0]}</span>
+          <span class="tree-label" style="font-weight:700">${grp.split(' ').slice(1).join(' ')}</span>
+          <span class="tree-badge" style="background:rgba(88,166,255,.15);color:var(--blue)">${grpItems.length}</span>
+          ${critCnt?`<span class="tree-badge" style="background:rgba(248,81,73,.2);color:var(--critical)">${critCnt} critical</span>`:''}
+        </div>
+        <div class="tree-children" style="display:none">`;
+      cats.forEach(cat=>{
+        const catItems=grpItems.filter(d=>d.category===cat);
+        if(!catItems.length) return;
+        const crit=catItems.filter(d=>d.stock_status==='Critical'||d.stock_status==='Reorder').length;
+        html+=`<div class="tree-node">
+          <div class="tree-row" onclick="toggleTree(this)">
+            <span class="tree-toggle">▶</span><span class="tree-icon">📁</span>
+            <span class="tree-label" style="font-weight:600">${cat}</span>
+            <span class="tree-badge" style="background:rgba(88,166,255,.1);color:var(--blue)">${catItems.length}</span>
+            ${crit?`<span class="tree-badge" style="background:rgba(248,81,73,.15);color:var(--critical)">${crit} flagged</span>`:''}
+          </div>
+          <div class="tree-children" style="display:none">`;
+        catItems.filter(d=>!q||(d.part_no+d.description).toLowerCase().includes(q)).forEach(d=>{
+          const flag = d.stock_status==='Critical'||d.stock_status==='Reorder';
+          html+=`<div class="tree-row ${flag?'flag-insufficient':''}">
+            <span class="tree-toggle" style="width:14px"></span>
+            <span>${getStatusIcon(d.stock_status)}</span>
+            <span class="tree-label" style="font-size:11px;${flag?'color:var(--critical)':''}">${d.part_no} — ${d.description}</span>
+            <span style="font-size:10px;color:var(--text2)">${d.today_opening.toLocaleString()} ${d.uom}</span>
+            <span class="tree-badge badge-${d.stock_status}">${d.stock_status}</span>
+          </div>`;
+        });
+        html+='</div></div>';
+      });
+      html+='</div></div>';
+    });
+    html+='</div></div>';
+  });
+  root.innerHTML=html;
+}
+function toggleTree(el){
+  const children=el.parentElement.querySelector('.tree-children');
+  if(!children) return;
+  const open=children.style.display!=='none';
+  children.style.display=open?'none':'block';
+  el.querySelector('.tree-toggle').textContent=open?'▶':'▼';
+}
+
+// ═══════════════ TV SCROLL ═══════════════
+function renderTV(){
+  const statusColor = {Critical:'#f85149',OK:'#3fb950',Reorder:'#d29922',Excess:'#a371f7'};
+  function genRows(tbodyId){
+    const body=document.getElementById(tbodyId);
+    body.innerHTML=ALL_DATA.map((d,i)=>`
+      <tr style="border-bottom:1px solid #1a2a1a;">
+        <td style="color:#555;font-size:11px">${d.sno}</td>
+        <td style="color:#58a6ff;font-weight:700">${d.part_no}</td>
+        <td style="max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.description}</td>
+        <td style="font-size:11px;color:#8b949e;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.supplier}</td>
+        <td style="font-size:11px">${d.category}</td>
+        <td style="font-size:11px;color:#8b949e">${d.uom}</td>
+        <td style="font-weight:800;color:${statusColor[d.stock_status]||'#fff'};font-size:14px">${d.today_opening.toLocaleString()}</td>
+        <td><span style="display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700;background:${statusColor[d.stock_status]}22;color:${statusColor[d.stock_status]};border:1px solid ${statusColor[d.stock_status]}">${d.stock_status}</span></td>
+        <td style="color:#3fb950;font-weight:700">${d.location}</td>
+      </tr>`).join('');
+  }
+  genRows('tvBody1'); genRows('tvBody2');
+}
+
+// ═══════════════ PO MODAL ═══════════════
+let currentPO=null;
+function openPO(d){
+  currentPO=d;
+  const qty = Math.max(d.moq,d.reorder_level-d.today_opening);
+  document.getElementById('poContent').innerHTML=`
+    <div class="modal-field"><label>Part Number</label><p style="color:var(--blue);font-weight:700">${d.part_no}</p></div>
+    <div class="modal-field"><label>Description</label><p>${d.description}</p></div>
+    <div class="modal-field"><label>Supplier</label><p style="color:var(--text2)">${d.supplier}</p></div>
+    <div class="modal-field"><label>Category / UOM</label><p>${d.category} / ${d.uom}</p></div>
+    <div class="modal-field"><label>Current Stock</label><p style="color:var(--critical);font-weight:700">${d.today_opening.toLocaleString()} ${d.uom}</p></div>
+    <div class="modal-field"><label>Reorder Level</label><p>${d.reorder_level.toLocaleString()} ${d.uom}</p></div>
+    <div class="modal-field"><label>Suggested Order Qty (MOQ)</label><p style="color:var(--ok);font-weight:700;font-size:16px">${qty.toLocaleString()} ${d.uom}</p></div>
+    <div class="modal-field"><label>Lead Time</label><p>${d.lead_time} days</p></div>
+    <div class="modal-field"><label>PO Date</label><p>${new Date().toLocaleDateString('en-IN')}</p></div>
+    <div class="modal-field"><label>Location</label><p>${d.location}</p></div>`;
+  document.getElementById('poModal').classList.add('open');
+}
+function closePO(){ document.getElementById('poModal').classList.remove('open'); }
+function confirmPO(){
+  if(!currentPO) return;
+  const qty=Math.max(currentPO.moq,currentPO.reorder_level-currentPO.today_opening);
+  alert(`✅ PO Generated!\n\nPO No: TRW-PO-${Date.now()}\nPart: ${currentPO.part_no}\nSupplier: ${currentPO.supplier}\nQty: ${qty.toLocaleString()} ${currentPO.uom}\nDate: ${new Date().toLocaleDateString('en-IN')}`);
+  closePO();
+}
+
+// ═══════════════ TOOLTIP ═══════════════
+function showTooltipModal(e,d){
+  const tip=document.getElementById('tooltip');
+  tip.style.display='block';
+  tip.innerHTML=`<strong style="color:var(--blue)">${d.part_no}</strong><br>
+    <span style="font-size:11px;color:var(--text2)">${d.description}</span><br><br>
+    📦 Stock: <strong style="color:var(--${d.stock_status.toLowerCase()})">${d.today_opening.toLocaleString()}</strong> ${d.uom}<br>
+    🏭 ${d.supplier}<br>
+    📍 ${d.location}<br>
+    ⏱️ Lead: ${d.lead_time}d`;
+  tip.style.left=(e.clientX+12)+'px';
+  tip.style.top=(e.clientY-40)+'px';
+  setTimeout(()=>{tip.style.display='none';},3500);
+}
+
+// Initial renders
+setTimeout(()=>{
+  renderSunburst(); renderRisk(); renderReorder(); renderDeadstock(); renderTree(); renderTV(); renderGeo();
+},200);
+</script>
+</body>
+</html>
